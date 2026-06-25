@@ -113,6 +113,7 @@
   <div id="app" class="flex h-screen relative z-10" style="display:none">
     
     <aside id="left-sidebar" class="w-full lg:w-[400px] h-full overflow-y-auto bg-white/85 backdrop-blur-md border-r border-[#D4E6F1] shadow-xl lg:shadow-none z-20 no-scrollbar select-none">
+      <div id="notch-protector" class="fixed top-0 left-0 w-full lg:w-[380px] h-[env(safe-area-inset-top)] bg-[#F4F9FB]/95 backdrop-blur-md z-40 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
       <header class="relative h-56 shrink-0 bg-sky-200 carousel-container">
   <div id="carousel" class="w-full h-full">
     <img src="https://i.postimg.cc/L57c14LH/IMG-2806.jpg?w=800&q=80" class="carousel-slide opacity-100">
@@ -136,7 +137,7 @@
     </div>
 </header>
       
-<div id="sticky-cat-wrapper" class="sticky top-0 z-30 px-3 pb-3 bg-[#F4F9FB]/95 backdrop-blur-md border-b border-[#D4E6F1] transition-all duration-200 shadow-2xs" style="padding-top: max(14px, env(safe-area-inset-top));">
+<div id="sticky-cat-wrapper" class="sticky top-[env(safe-area-inset-top)] z-30 px-3 py-3.5 bg-[#F4F9FB]/95 backdrop-blur-md border-b border-[#D4E6F1] transition-all duration-200 shadow-2xs">
       <div id="category-bar" class="grid grid-cols-5 gap-y-3 gap-x-1.5"></div>
       </div>
 
