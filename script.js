@@ -3,6 +3,17 @@ const SB_URL = "https://ldcxwcjtceezttiogarp.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY3h3Y2p0Y2VlenR0aW9nYXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDE1NzIsImV4cCI6MjA5NzcxNzU3Mn0.qWHlILHoHS9cbAvUTj_KmkyL2h9oxnHeFhOBrOAC_hg";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
+// --- VARIABLES GLOBALES ---
+const STORAGE_BUCKET = "images"; 
+const GLOBAL_CODE = "Crevette";
+let currentUser = null;
+let selectedItemId = null;
+let itemsData = [];
+let activeCategory = "all"; 
+let chosenResMode = 'public'; 
+let catConfig = {}; 
+let filterAvailableOnly = {};
+
 // 🚀 INITIALISATION COMPLÈTE DE L'APPLICATION
 document.addEventListener('DOMContentLoaded', async () => {
   const stepGlobal = document.getElementById('step-global');
@@ -31,17 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (stepGlobal) stepGlobal.style.display = 'flex';
   }
 });
-
-const STORAGE_BUCKET = "images"; 
-
-const GLOBAL_CODE = "Crevette";
-let currentUser = null;
-let selectedItemId = null;
-let itemsData = [];
-let activeCategory = "all"; 
-let chosenResMode = 'public'; 
-let catConfig = {}; 
-let filterAvailableOnly = {}; 
 
 // --- CARROUSEL ---
 let slideIndex = 0;
