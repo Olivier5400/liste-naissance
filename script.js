@@ -203,9 +203,6 @@ async function initApp() {
 }
 
 // =========================================================================
-//   LE SMART HEADER : Correction vitesse et point de déclenchement
-// =========================================================================
-// =========================================================================
 //   LE SMART HEADER : Avec anti-rebond et tolérance
 // =========================================================================
 function initScrollListener() {
@@ -215,33 +212,28 @@ function initScrollListener() {
   
   if (!sidebar || !catWrapper) return;
 
-  // Restauration de la transition fluide
   catWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
 
   sidebar.addEventListener('scroll', function() {
     let scrollTop = sidebar.scrollTop;
     
-    // 🛡️ SÉCURITÉ 1 : Ignorer le rebond physique tout en bas de la page (effet élastique iOS)
+    // 🛡️ SÉCURITÉ 1 : Ignorer le rebond physique tout en bas de la page
     if (scrollTop + sidebar.clientHeight >= sidebar.scrollHeight - 10) {
       return; 
     }
 
-    // 🛡️ SÉCURITÉ 2 : L'AMORTISSEUR (Empêche l'effet éclair)
+    // 🛡️ SÉCURITÉ 2 : Ajouter une tolérance de 15px avant de réagir
     if (Math.abs(scrollTop - lastScrollTop) < 15) {
       return;
     }
     
-    // 🪄 LE MASQUAGE INTELLIGENT
     if (scrollTop > 580) {
       if (scrollTop > lastScrollTop) {
-        // Défilement vers le bas : on la pousse à -150% pour masquer même la 2ème ligne de texte
-        catWrapper.style.transform = 'translateY(-150%)';
+        catWrapper.style.transform = 'translateY(-100%)';
       } else {
-        // Défilement vers le haut : elle redescend à sa place
         catWrapper.style.transform = 'translateY(0)';
       }
     } else {
-      // Tout en haut de la page : la barre reste visible
       catWrapper.style.transform = 'translateY(0)';
     }
     
