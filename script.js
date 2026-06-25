@@ -501,7 +501,7 @@ async function showDetail(id) {
   const catColor = catConfig[item.cat_id]?.text || '#2980B9';
 
   contentEl.innerHTML = `
-    <div class="mb-5 text-left">
+    <div class="mt-12 md:mt-4 mb-5 text-left">
       <button onclick="closeDetails()" class="bg-white border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-2 hover:bg-stone-50 transition w-max cursor-pointer">
         ← Retour à la liste
       </button>
@@ -622,7 +622,7 @@ async function toggleAdminView() {
   const catOptions = Object.keys(catConfig).filter(k => k !== 'all').map(k => `<option value="${catConfig[k].id}">${catConfig[k].emoji} ${catConfig[k].label}</option>`).join('');
 
   contentEl.innerHTML = `
-    <button onclick="closeDetails()" class="mb-5 bg-white border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-2 hover:bg-stone-50 transition w-max cursor-pointer">← Retour</button>
+    <button onclick="closeDetails()" class="mt-12 md:mt-4 mb-5 bg-white border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-2 hover:bg-stone-50 transition w-max cursor-pointer">← Retour</button>
     <h2 class="text-xl font-black text-[#5C544D] mb-4">🛠️ Espace Admin</h2>
     <hr class="border-stone-200 my-4">
     
@@ -727,7 +727,7 @@ function renderAdminReservationsView() {
   }
 
   contentEl.innerHTML = `
-    <button onclick="toggleAdminView()" class="mb-5 bg-white border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-2 hover:bg-stone-50 transition w-max cursor-pointer">← Retour</button>
+    <button onclick="toggleAdminView()" class="mt-12 md:mt-4 mb-5 bg-white border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-2 hover:bg-stone-50 transition w-max cursor-pointer">← Retour</button>
     <h2 class="text-xl font-black text-[#5C544D] mb-4">📋 Suivi des Réservations</h2>
     <hr class="border-stone-200 my-4">
     
@@ -823,7 +823,7 @@ function showEditForm(itemId) {
   const safePhoto = (item.photo_url || "").replace(/"/g, '&quot;');
 
   contentEl.innerHTML = `
-    <button onclick="showDetail('${item.id}')" class="mb-5 bg-white border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-2 hover:bg-stone-50 transition w-max cursor-pointer">← Annuler</button>
+    <button onclick="showDetail('${item.id}')" class="mt-12 md:mt-4 mb-5 bg-white border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-sm inline-flex items-center gap-2 hover:bg-stone-50 transition w-max cursor-pointer">← Annuler</button>
     <h2 class="text-xl font-black text-[#B7950B] mb-4">⚙️ Modifier l'objet</h2>
     <hr class="border-stone-200 my-4">
 
