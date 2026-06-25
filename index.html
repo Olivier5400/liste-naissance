@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Liste naissance</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+  
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/3rqf1KJG/favicon.png">
+    
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Liste Bébé">
+  
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=portrait">    
+  <title>Liste de Naissance 🍼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #EAF4FC; }
+        .carousel-container {
+            border-bottom-right-radius: 3rem;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            overflow: hidden;
+        }
+        .carousel-slide {
+            transition: opacity 1.2s ease-in-out;
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      /* Force le mode portrait sur les appareils mobiles */
+    @media screen and (orientation: landscape) and (max-width: 900px) {
+        body {
+            /* Optionnel : tu pourrais afficher un petit message ici demandant de tourner le téléphone */
+            transform: rotate(0deg); 
+        }
+    }
+
+    /* Empêche le zoom sur mobile */
+    body {
+        touch-action: pan-y; /* Autorise le scroll vertical mais bloque le pincement pour zoomer */
+    }
+    </style>
+</head>
+<body class="text-stone-700 antialiased font-sans overflow-hidden">
+
+  <!-- ETAPE 1 : LE CODE ACCÈS GLOBAL -->
+  <div id="step-global" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-100/90 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-white rounded-[2rem] p-8 border border-sky-200 shadow-xl text-center relative z-10">
+      <div class="text-5xl mb-4">🧸</div>
+      <h2 class="text-2xl font-black text-[#5C544D] mb-2">Bienvenue</h2>
+      <p class="text-sm text-stone-500 mb-6 font-medium">Entrez le code secret de la famille</p>
+      <input type="password" id="pass-global" placeholder="Code de la liste..." class="w-full px-4 py-3 rounded-2xl border-2 border-sky-200 bg-[#F5FAFF] text-center font-bold focus:outline-none focus:border-sky-400 transition mb-4 text-stone-700">
+      <button onclick="checkGlobalPass()" class="w-full py-4 bg-[#7FB3D5] hover:bg-[#6CA1C3] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-md transition active:scale-95">Découvrir la liste</button>
+    </div>
+  </div>
+
+  <!-- ETAPE 2 : FAISONS CONNAISSANCE (REFONTE SANS EMAIL & DEUX SECTIONS DISTINCTES) -->
+  <div id="step-auth" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-100/90 backdrop-blur-sm overflow-y-auto no-scrollbar" style="display:none">
+    <div class="w-full max-w-sm bg-white rounded-[2rem] p-6 border border-sky-200 shadow-xl text-center relative z-10 my-auto flex flex-col gap-5">
+      
+      <!-- ENTÊTE -->
+      <div>
+        <div class="text-3xl mb-1.5">🐣</div>
+        <h2 class="text-lg font-black text-[#5C544D]">Connexion</h2>
+        <p class="text-xs text-stone-700 mb-3 leading-tight">Notez bien votre mot de passe,
+          <br>il n'y a pas d'option de récupération !</p>
+
+      </div>
+
+      <!-- SECTION A : PREMIÈRE VISITE (INSCRIPTION) -->
+      <div class="text-left bg-stone-50/80 p-4 rounded-2xl border border-stone-100">
+        <h3 class="font-black text-stone-800 text-xs uppercase tracking-wider mb-1">✨ Première visite ?</h3>
+        <p class="text-[11px] text-stone-400 mb-3 leading-tight">Enregistrez-vous pour bloquer vos cadeaux et retrouver vos choix plus tard.</p>
+        
+        <div class="space-y-2">
+          <input type="text" id="reg-prenom" placeholder="Votre prénom" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-bold text-stone-700 focus:outline-none focus:border-sky-300">
+          <input type="text" id="reg-surnom" placeholder="Votre surnom (facultatif)" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-bold text-stone-700 focus:outline-none focus:border-sky-300">
+          <input type="password" id="reg-pass" placeholder="Choisissez un mot de passe" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-bold text-stone-700 focus:outline-none focus:border-sky-300">
+          
+          <button onclick="handleRegister()" class="w-full mt-1 py-3 bg-[#7FB3D5] hover:bg-[#6CA1C3] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm transition active:scale-95 cursor-pointer">
+            Créer mon compte
+          </button>
+        </div>
+      </div>
+
+      <!-- SÉPARATEUR VISUEL -->
+      <div class="flex items-center px-2">
+        <div class="flex-1 h-px bg-stone-200"></div>
+        <span class="px-3 text-[9px] font-black uppercase tracking-widest text-stone-400">OU</span>
+        <div class="flex-1 h-px bg-stone-200"></div>
+      </div>
+
+      <!-- SECTION B : DÉJÀ INSCRIT (CONNEXION) -->
+      <div class="text-left bg-[#F5FAFF] p-4 rounded-2xl border border-[#EAF4FC]">
+        <h3 class="font-black text-[#1F618D] text-xs uppercase tracking-wider mb-1">👋 Déjà venu ?</h3>
+        <p class="text-[11px] text-stone-400 mb-3 leading-tight">Connectez-vous pour suivre vos réservations ou continuer vos cadeaux.</p>
+        
+        <div class="space-y-2">
+          <input type="text" id="login-prenom" placeholder="Votre prénom" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-bold text-stone-700 focus:outline-none focus:border-sky-300">
+          <input type="password" id="login-pass" placeholder="Votre mot de passe" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-bold text-stone-700 focus:outline-none focus:border-sky-300">
+          
+          <button onclick="handleLogin()" class="w-full mt-1 py-3 bg-white border-2 border-[#7FB3D5] hover:bg-[#EAF4FC] text-[#1F618D] rounded-xl font-black text-[10px] uppercase tracking-widest shadow-2xs transition active:scale-95 cursor-pointer">
+            Se connecter
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APPLICATION PRINCIPALE -->
+  <div id="app" class="flex h-screen relative z-10" style="display:none">
+    
+    <aside id="left-sidebar" class="w-full lg:w-[600px] h-full overflow-y-auto bg-white/85 backdrop-blur-md border-r border-[#D4E6F1] shadow-xl lg:shadow-none z-20 no-scrollbar select-none">
+      <header class="relative h-56 shrink-0 bg-sky-200 carousel-container">
+  <div id="carousel" class="w-full h-full">
+    <img src="https://i.postimg.cc/L57c14LH/IMG-2806.jpg?w=800&q=80" class="carousel-slide opacity-100">
+    <img src="https://i.postimg.cc/sx8khfSJ/IMG-3200.jpg?w=800&q=80" class="carousel-slide opacity-0">
+    <img src="https://i.postimg.cc/HnKqyW54/d7f127e0-c36c-4dbd-b5b8-7adf9be680d7.jpg?w=800&q=80" class="carousel-slide opacity-0">
+    <img src="https://i.postimg.cc/1XTkqR6G/4dc87df3-b366-4e49-93cb-f807e7f1004e.jpg?w=800&q=80" class="carousel-slide opacity-0">
+    <img src="https://i.postimg.cc/KjV6McLN/IMG-3225.jpg?w=800&q=80" class="carousel-slide opacity-0">
+    <img src="https://i.postimg.cc/tJfKxRPc/Scan-03-04-2026-10-20.jpg?w=800&q=80" class="carousel-slide opacity-0">
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/10 to-transparent"></div>
+  
+  <!-- Bouton Admin (à gauche) -->
+  <button id="master-btn" onclick="toggleAdminView()" class="hidden absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur border border-stone-200 text-stone-700 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-sm transition active:scale-95 hover:bg-white cursor-pointer">🛠️ Admin</button>
+       
+  <!-- LE NOUVEAU BOUTON DÉCONNEXION (à droite) -->
+  <button onclick="handleLogout()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-[#E0F2FE] hover:bg-[#CBE3F5] text-[#2980B9] border border-[#7FB3D5] flex items-center justify-center shrink-0 transition hover:scale-105 shadow-sm text-sm cursor-pointer" title="Se déconnecter">➡️</button>
+        
+  <div class="absolute bottom-5 left-6 right-6">
+    <h1 class="text-2xl font-black text-white tracking-tight drop-shadow-lg leading-tight">La Liste de Naissance</h1>
+    <span class="text-[12px] font-black uppercase tracking-widest text-[#D4E6F1] drop-shadow-md">Pour notre petit garçon</span>
+    
+  </div>
+</header>
+      
+      <div id="sticky-cat-wrapper" class="sticky top-0 z-30 px-3 py-3.5 bg-[#F4F9FB]/95 backdrop-blur-md border-b border-[#D4E6F1] transition-all duration-200 shadow-2xs">
+        <div id="category-bar" class="grid grid-cols-5 gap-y-3 gap-x-1.5"></div>
+      </div>
+
+      <div id="list-container" class="p-4 space-y-5 pb-24 lg:pb-6"></div>
+    </aside>
+
+   <main id="details-panel" class="fixed inset-0 lg:static lg:flex-1 bg-[#EAF4FC]/95 backdrop-blur-md lg:bg-transparent z-50 lg:z-10 hidden lg:block lg:p-8 overflow-y-auto no-scrollbar">
+      
+      <div id="details-placeholder" class="h-full w-full flex flex-col items-center justify-center text-center p-8 max-w-xl mx-auto select-text">
+        <div class="text-6xl mb-5 animate-bounce">🍼</div>
+        <h3 class="text-xl font-black text-[#5C544D] mb-3">Chère famille et chers amis, ✨</h3>
+        <p class="text-sm text-stone-500 font-medium leading-relaxed mb-6 max-w-md">
+          Vous l'attendier avec impatience ? Pas vraiment ?! <br> Et bien vous l'avez quand même 😅 <br><br>
+          Voici notre liste de naissance pour notre crevette d'amour 🐣<br>
+          Cette liste a  pour but d'éviter si vous souhaitez nous offrir un petit quelque chose 🙏, les potentiels doublons   
+<br> (Et si possible aussi limiter la fièvre acheteuse et le consumérisme 🤪)    
+        <p class="text-sm text-stone-500 font-medium leading-relaxed mb-6 max-w-md">
+         Un grand merci d'avance pour toutes vos délicates attentions et votre accompagnement dans cette belle aventure.<br>
+         On vous embrasse et on a hâte de vous retrouver...<br> à 3 du coups bientôt 🥰
+          
+        </p>
+        
+        <div class="w-full bg-white p-5 rounded-2xl border border-[#D4E6F1] shadow-2xs text-left text-xs">
+          <p class="font-black text-[#2980B9] mb-2 flex items-center gap-1.5">
+            <span>📍</span> Besoin de notre adresse pour une livraison ?
+          </p>
+          <p class="text-stone-600 font-bold leading-relaxed">
+            Gaëlle RAUD et Olivier CADIOU<br>
+            30 Quai de la Bataille<br>
+            54000 Nancy
+          </p>
+        </div>
+        
+        <p class="text-xs font-black text-stone-400 mt-8 uppercase tracking-wider">
+          💡 Sélectionnez un article à gauche pour ouvrir ses détails
+        </p>
+        <br>
+                <style>
+  /* Définition du mouvement de la main */
+  @keyframes wave {
+    0%   { transform: rotate(0deg); }
+    10%  { transform: rotate(14deg); }
+    20%  { transform: rotate(-8deg); }
+    30%  { transform: rotate(14deg); }
+    40%  { transform: rotate(-4deg); }
+    50%  { transform: rotate(10deg); }
+    60%  { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  .animate-wave {
+    /* La durée de 2.5s permet de faire une pause entre chaque coucou */
+    animation: wave 2.5s infinite;
+    
+    /* Le "poignet" : on décale le point de rotation vers le bas de l'émoji */
+    transform-origin: 70% 70%;
+    
+    /* Indispensable pour appliquer une rotation sur un élément texte/émoji */
+    display: inline-block; 
+  }
+</style>
+
+<!-- Ton émoji avec la nouvelle classe -->
+<div class="text-6xl mb-5 animate-wave">🧸</div>
+
+      </div>
+
+      <div id="details-content" class="bg-white min-h-full lg:min-h-0 w-full h-auto lg:rounded-[2rem] shadow-xl p-6 lg:p-8 border border-[#D4E6F1] flex-col hidden" style="display: none;"></div>
+
+    </main>
+  </div>
+
+  <!-- MODALE DE RESERVATION -->
+  <div id="reservation-modal" class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="w-full sm:max-w-md bg-white rounded-t-[2rem] sm:rounded-3xl p-6 transform translate-y-10 transition-transform duration-300">
+      <h3 class="text-xl font-black text-[#5C544D] mb-1">🎁 Votre réservation</h3>
+      <p class="text-xs font-medium text-stone-400 mb-5">Choisissez comment vous souhaitez apparaître :</p>
+      <div class="space-y-2 mb-6">
+        <button id="res-btn-public" onclick="setReservationMode('public')" class="w-full text-left p-4 rounded-2xl border border-stone-200 bg-[#F5FAFF] hover:bg-[#EAF4FC] transition font-bold text-sm flex items-center gap-3 cursor-pointer"><span class="text-xl">👤</span> Votre identity officielle</button>
+        <button id="res-btn-pseudonyme" onclick="setReservationMode('pseudonyme')" class="w-full text-left p-4 rounded-2xl border border-stone-200 bg-[#F5FAFF] hover:bg-[#EAF4FC] transition font-bold text-sm flex items-center gap-3 cursor-pointer"><span class="text-xl">🎭</span> Un pseudonyme mystère...</button>
+        <div id="custom-pseudo-container" class="hidden px-4 py-2 border-l-4 border-[#7FB3D5] bg-[#F5FAFF] rounded-r-2xl"><input type="text" id="custom-pseudo-input" placeholder="Ex: Le Parrain magique..." class="w-full bg-transparent text-sm py-1 focus:outline-none font-bold text-[#5C544D]"></div>
+        <button id="res-btn-anonyme" onclick="setReservationMode('anonyme')" class="w-full text-left p-4 rounded-2xl border border-stone-200 bg-[#F5FAFF] hover:bg-[#EAF4FC] transition font-bold text-sm flex items-center gap-3 cursor-pointer"><span class="text-xl">🤫</span> Rester totalement Anonyme</button>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeReservationModal()" class="flex-1 py-3.5 bg-stone-100 text-stone-600 rounded-xl font-black text-xs uppercase tracking-widest cursor-pointer">Annuler</button>
+        <button onclick="submitReservation()" class="flex-1 py-3.5 bg-[#7FB3D5] hover:bg-[#6CA1C3] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-md cursor-pointer">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>
