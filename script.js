@@ -905,7 +905,7 @@ async function saveItemChanges(id) {
 //   OUTILS D'ADMINISTRATION : MOD DEV
 // =========================================================================
 
-const DEV_MODE = true; const DEV_AS_MASTER = true;  
+const DEV_MODE = false; const DEV_AS_MASTER = false;  
 if (DEV_MODE) {
   document.getElementById('step-global').style.display = 'none';
   
