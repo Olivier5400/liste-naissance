@@ -211,6 +211,7 @@ async function initApp() {
 function initScrollListener() {
   const sidebar = document.getElementById('left-sidebar');
   const catWrapper = document.getElementById('sticky-cat-wrapper');
+  const notchProtector = document.getElementById('notch-protector');
   let lastScrollTop = 0;
   
   if (!sidebar || !catWrapper) return;
