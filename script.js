@@ -970,6 +970,60 @@ async function saveItemChanges(id) {
 }
 
 // =========================================================================
+//   ACTUALISATION INVISIBLE EN ARRIÈRE-PLAN
+// =========================================================================
+
+async function backgroundRefresh() {
+  // 🛡️ SÉCURITÉ 1 : L'application est-elle au premier plan et l'utilisateur connecté ?
+  if (document.hidden || !currentUser) return; 
+
+  // 🛡️ SÉCURITÉ 2 : L'utilisateur a-t-il une fenêtre ouverte (Admin, Détail, Modif, Réservation) ?
+  const detailsEl = document.getElementById('details-content');
+  const detailsOpen = detailsEl && !detailsEl.classList.contains('hidden') && detailsEl.style.display !== 'none';
+  
+  const modalEl = document.getElementById('reservation-modal');
+  const modalOpen = modalEl && !modalEl.classList.contains('opacity-0');
+  
+  // S'il fait quelque chose, on annule l'actualisation pour ce cycle
+  if (detailsOpen || modalOpen) return;
+
+  // 2. On récupère les nouvelles données en silence
+  const { data: newItems } = await sb.from('items').select('*').order('nom', { ascending: true });
+  const { data: newReservations } = await sb.from('reservations').select('*');
+  const { data: profiles } = await sb.from('profiles').select('*');
+
+  if (!newItems) return;
+
+  // 3. On reconstruit les données
+  const newItemsData = newItems.map(item => {
+    const itemRes = newReservations ? newReservations.filter(r => r.item_id === item.id) : [];
+    if (itemRes.length > 0) {
+      const res = itemRes[0];
+      res.profiles = profiles ? profiles.find(p => p.id === res.user_id) : null;
+    }
+    item.reservations = itemRes;
+    return item;
+  });
+
+  // 4. On compare : est-ce qu'il y a eu un changement depuis la dernière fois ?
+  if (JSON.stringify(newItemsData) !== JSON.stringify(itemsData)) {
+    itemsData = newItemsData; // Mise à jour de la mémoire
+    
+    // On sauvegarde la position exacte du défilement
+    const sidebar = document.getElementById('left-sidebar');
+    const currentScroll = sidebar.scrollTop;
+    
+    renderItemsLayout(); // On redessine la liste avec les nouveautés
+    
+    // On remet l'utilisateur exactement là où il était
+    sidebar.scrollTop = currentScroll; 
+  }
+}
+
+// On lance le radar silencieux toutes les 15 secondes (15000 ms)
+setInterval(backgroundRefresh, 15000);
+
+// =========================================================================
 //   OUTILS D'ADMINISTRATION : MOD DEV
 // =========================================================================
 
