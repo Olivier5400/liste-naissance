@@ -209,8 +209,44 @@ async function initApp() {
 //   LE SMART HEADER : Avec anti-rebond et tolérance
 // =========================================================================
 function initScrollListener() {
-  // On ne fait plus rien de spécial au scroll pour la barre ! 
-  // Le CSS "sticky" se gère tout seul comme un grand, et fini les bugs d'affichage !
+  const sidebar = document.getElementById('left-sidebar');
+  const catWrapper = document.getElementById('sticky-cat-wrapper');
+  let lastScrollTop = 0;
+  
+  if (!sidebar || !catWrapper) return;
+
+  // Restauration de la transition fluide
+  catWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+
+  sidebar.addEventListener('scroll', function() {
+    let scrollTop = sidebar.scrollTop;
+    
+    // 🛡️ SÉCURITÉ 1 : Ignorer le rebond physique tout en bas de la page (effet élastique iOS)
+    if (scrollTop + sidebar.clientHeight >= sidebar.scrollHeight - 10) {
+      return; 
+    }
+
+    // 🛡️ SÉCURITÉ 2 : L'AMORTISSEUR (Empêche l'effet éclair)
+    if (Math.abs(scrollTop - lastScrollTop) < 15) {
+      return;
+    }
+    
+    // 🪄 LE MASQUAGE INTELLIGENT
+    if (scrollTop > 580) {
+      if (scrollTop > lastScrollTop) {
+        // Défilement vers le bas : on la pousse à -150% pour masquer même la 2ème ligne de texte
+        catWrapper.style.transform = 'translateY(-150%)';
+      } else {
+        // Défilement vers le haut : elle redescend à sa place
+        catWrapper.style.transform = 'translateY(0)';
+      }
+    } else {
+      // Tout en haut de la page : la barre reste visible
+      catWrapper.style.transform = 'translateY(0)';
+    }
+    
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
+  }, { passive: true });
 }
 
 function renderCategoryBar() {
