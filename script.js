@@ -14,14 +14,28 @@ let chosenResMode = 'public';
 let catConfig = {}; 
 let filterAvailableOnly = {}; 
 
-// 🔍 VÉRIFICATION DE LA MÉMOIRE AU LANCEMENT
-document.addEventListener('DOMContentLoaded', () => {
+// 🔍 VÉRIFICATION DE LA MÉMOIRE ET DE LA CONNEXION AU LANCEMENT
+document.addEventListener('DOMContentLoaded', async () => {
   if (localStorage.getItem('family_unlocked') === 'true') {
-    // On cache juste le mot de passe familial
+    // 1. On cache l'écran du mot de passe familial
     const stepGlobal = document.getElementById('step-global');
     if (stepGlobal) stepGlobal.style.display = 'none';
     
-    // On s'arrête là ! On laisse Supabase afficher le bon écran tout seul.
+    // 2. On demande immédiatement à Supabase si Gaëlle (ou un autre) est connecté
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      // ✅ Une session existe : on va direct sur l'application (la liste)
+      document.getElementById('step-auth').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      
+      // (Optionnel : si tu as une fonction init() ou loadItems() pour charger 
+      // les cadeaux, c'est bien de l'appeler ici)
+    } else {
+      // ❌ Pas de session (ou expirée) : on affiche l'écran de connexion (Prénom/Pass)
+      document.getElementById('step-auth').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
   }
 });
 
