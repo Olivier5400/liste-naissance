@@ -688,6 +688,29 @@ async function toggleAdminView() {
       📋 Voir le suivi des réservations
     </button>
   `;
+// --- SYSTÈME DE BROUILLON AUTOMATIQUE ---
+  // 1. On récupère le brouillon s'il existe
+  const draft = JSON.parse(localStorage.getItem('admin_draft') || '{}');
+  if (draft.nom) document.getElementById('add-nom').value = draft.nom;
+  if (draft.prix) document.getElementById('add-prix').value = draft.prix;
+  if (draft.lien) document.getElementById('add-lien').value = draft.lien;
+  if (draft.desc) document.getElementById('add-desc').value = draft.desc;
+
+  // 2. On sauvegarde en temps réel à chaque touche pressée
+  const saveDraft = () => {
+    localStorage.setItem('admin_draft', JSON.stringify({
+      nom: document.getElementById('add-nom').value,
+      prix: document.getElementById('add-prix').value,
+      lien: document.getElementById('add-lien').value,
+      desc: document.getElementById('add-desc').value
+    }));
+  };
+
+  document.getElementById('add-nom').addEventListener('input', saveDraft);
+  document.getElementById('add-prix').addEventListener('input', saveDraft);
+  document.getElementById('add-lien').addEventListener('input', saveDraft);
+  document.getElementById('add-desc').addEventListener('input', saveDraft);
+  
 }
 
 function renderAdminReservationsView() {
@@ -815,7 +838,17 @@ async function addNewItem() {
     description: desc ? desc : null
   }]);
   
-  if (!error) { alert("Objet publié !"); await loadItems(); closeDetails(); } else { alert("Erreur d'ajout : " + error.message); }
+  if (!error) { 
+    alert("Objet publié !"); 
+    
+    // 🧹 NETTOYAGE DU BROUILLON ICI
+    localStorage.removeItem('admin_draft'); 
+    
+    await loadItems(); 
+    closeDetails(); 
+  } else { 
+    alert("Erreur d'ajout : " + error.message); 
+  }
 }
 
 
