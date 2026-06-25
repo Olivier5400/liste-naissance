@@ -211,7 +211,7 @@ async function initApp() {
 function initScrollListener() {
   const sidebar = document.getElementById('left-sidebar');
   const catWrapper = document.getElementById('sticky-cat-wrapper');
-  const notchProtector = document.getElementById('notch-protector');
+  const notchProtector = document.getElementById('notch-protector'); 
   let lastScrollTop = 0;
   
   if (!sidebar || !catWrapper) return;
@@ -221,19 +221,28 @@ function initScrollListener() {
   sidebar.addEventListener('scroll', function() {
     let scrollTop = sidebar.scrollTop;
     
-    // 🛡️ SÉCURITÉ 1 : Ignorer le rebond physique tout en bas de la page
+    // 🪄 1. LE BOUCLIER D'ENCOCHE (Synchronisation parfaite)
+    if (notchProtector) {
+      // On lit la distance exacte entre la barre de catégories et le haut de l'écran
+      const rect = catWrapper.getBoundingClientRect();
+      // L'encoche iPhone faisant environ 47px, dès qu'on arrive à 60px, on allume le bouclier
+      if (rect.top <= 60) {
+        notchProtector.style.opacity = '1';
+      } else {
+        notchProtector.style.opacity = '0';
+      }
+    }
+    
+    // 🛡️ SÉCURITÉ : Ignorer le rebond physique (effet élastique iOS)
     if (scrollTop + sidebar.clientHeight >= sidebar.scrollHeight - 10) {
       return; 
     }
-
-    // 🛡️ SÉCURITÉ 2 : Ajouter une tolérance de 15px avant de réagir
-    if (Math.abs(scrollTop - lastScrollTop) < 15) {
-      return;
-    }
     
+    // 🪄 2. LE MASQUAGE DE LA BARRE
     if (scrollTop > 580) {
       if (scrollTop > lastScrollTop) {
-        catWrapper.style.transform = 'translateY(-100%)';
+        // On la pousse très haut (-200%) pour qu'elle passe sous le bouclier et disparaisse totalement
+        catWrapper.style.transform = 'translateY(-200%)';
       } else {
         catWrapper.style.transform = 'translateY(0)';
       }
