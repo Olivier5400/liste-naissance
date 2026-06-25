@@ -7,7 +7,6 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 document.addEventListener('DOMContentLoaded', async () => {
   const stepGlobal = document.getElementById('step-global');
   const stepAuth = document.getElementById('step-auth');
-  const appScreen = document.getElementById('app');
 
   // 1. Le mot de passe familial "Crevette" est-il connu ?
   if (localStorage.getItem('family_unlocked') === 'true') {
@@ -20,12 +19,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       // ✅ La session est trouvée (Connexion réussie en arrière-plan)
       currentUser = session.user;
       if (stepAuth) stepAuth.style.display = 'none';
-      if (appScreen) appScreen.style.display = 'flex';
-      loadItems(); // On charge les cadeaux
+      
+      // 🪄 LA MAGIE EST LÀ : On lance toute ta séquence de démarrage
+      initApp(); 
     } else {
       // ❌ Aucune session trouvée (ou expirée), on demande les identifiants
       if (stepAuth) stepAuth.style.display = 'flex';
-      if (appScreen) appScreen.style.display = 'none';
     }
   } else {
     // Le mot de passe "Crevette" n'a pas encore été tapé
@@ -33,19 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// 📡 RADAR ACTIF (Pour détecter quand on clique sur "Se connecter" ou "Déconnexion")
-sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    currentUser = session.user;
-    document.getElementById('step-auth').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    loadItems();
-  } else if (event === 'SIGNED_OUT') {
-    currentUser = null;
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('step-auth').style.display = 'flex';
-  }
-});
 const STORAGE_BUCKET = "images"; 
 
 const GLOBAL_CODE = "Crevette";
