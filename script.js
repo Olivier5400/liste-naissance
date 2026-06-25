@@ -3,26 +3,49 @@ const SB_URL = "https://ldcxwcjtceezttiogarp.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY3h3Y2p0Y2VlenR0aW9nYXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDE1NzIsImV4cCI6MjA5NzcxNzU3Mn0.qWHlILHoHS9cbAvUTj_KmkyL2h9oxnHeFhOBrOAC_hg";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
-// 📡 RADAR DE CONNEXION AUTOMATIQUE (À coller juste sous const sb = ...)
-sb.auth.onAuthStateChange((event, session) => {
-  if (session) {
-    // 1. L'application reconnaît l'utilisateur (ex: Gaëlle sur son iPad)
-    currentUser = session.user;
-    
-    // 2. On masque tous les écrans d'accueil et de connexion
-    const stepGlobal = document.getElementById('step-global');
-    const stepAuth = document.getElementById('step-auth');
+// 🚀 INITIALISATION COMPLÈTE DE L'APPLICATION
+document.addEventListener('DOMContentLoaded', async () => {
+  const stepGlobal = document.getElementById('step-global');
+  const stepAuth = document.getElementById('step-auth');
+  const appScreen = document.getElementById('app');
+
+  // 1. Le mot de passe familial "Crevette" est-il connu ?
+  if (localStorage.getItem('family_unlocked') === 'true') {
     if (stepGlobal) stepGlobal.style.display = 'none';
-    if (stepAuth) stepAuth.style.display = 'none';
     
-    // 3. On affiche l'interface principale de la liste
-    document.getElementById('app').style.display = 'flex';
+    // 2. On interroge Supabase de force avant d'afficher quoi que ce soit
+    const { data: { session } } = await sb.auth.getSession();
     
-// 4. On charge les cadeaux avec ta vraie fonction
-    loadItems(); 
+    if (session) {
+      // ✅ La session est trouvée (Connexion réussie en arrière-plan)
+      currentUser = session.user;
+      if (stepAuth) stepAuth.style.display = 'none';
+      if (appScreen) appScreen.style.display = 'flex';
+      loadItems(); // On charge les cadeaux
+    } else {
+      // ❌ Aucune session trouvée (ou expirée), on demande les identifiants
+      if (stepAuth) stepAuth.style.display = 'flex';
+      if (appScreen) appScreen.style.display = 'none';
+    }
+  } else {
+    // Le mot de passe "Crevette" n'a pas encore été tapé
+    if (stepGlobal) stepGlobal.style.display = 'flex';
   }
 });
 
+// 📡 RADAR ACTIF (Pour détecter quand on clique sur "Se connecter" ou "Déconnexion")
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    currentUser = session.user;
+    document.getElementById('step-auth').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    loadItems();
+  } else if (event === 'SIGNED_OUT') {
+    currentUser = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('step-auth').style.display = 'flex';
+  }
+});
 const STORAGE_BUCKET = "images"; 
 
 const GLOBAL_CODE = "Crevette";
@@ -33,17 +56,6 @@ let activeCategory = "all";
 let chosenResMode = 'public'; 
 let catConfig = {}; 
 let filterAvailableOnly = {}; 
-
-// 🔍 VÉRIFICATION DE LA MÉMOIRE AU LANCEMENT
-document.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem('family_unlocked') === 'true') {
-    const stepGlobal = document.getElementById('step-global');
-    if (stepGlobal) stepGlobal.style.display = 'none';
-    
-    const stepAuth = document.getElementById('step-auth');
-    if (stepAuth) stepAuth.style.display = 'flex';
-  }
-});
 
 // --- CARROUSEL ---
 let slideIndex = 0;
