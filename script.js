@@ -435,8 +435,8 @@ function renderItemCard(item) {
           <span class="font-black" style="color: ${catColor}">Prix :</span>
           <span class="font-black" style="color: ${catColor}">${price} €</span>
         </div>
-        <a href="${itemUrl}" target="_blank" class="w-10 h-10 rounded-full bg-white hover:bg-[#EAF4FC] text-[#2980B9] flex items-center justify-center border border-[#D4E6F1] transition hover:scale-105 shrink-0 text-sm shadow-sm" title="Site internet">🔗</a>
-        ${actionButtonHtml}
+${linkButtonHtml}
+${actionButtonHtml}
       </div>
     </div>
   `;
