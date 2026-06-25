@@ -3,6 +3,26 @@ const SB_URL = "https://ldcxwcjtceezttiogarp.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY3h3Y2p0Y2VlenR0aW9nYXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDE1NzIsImV4cCI6MjA5NzcxNzU3Mn0.qWHlILHoHS9cbAvUTj_KmkyL2h9oxnHeFhOBrOAC_hg";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
+// 📡 RADAR DE CONNEXION AUTOMATIQUE (À coller juste sous const sb = ...)
+sb.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    // 1. L'application reconnaît l'utilisateur (ex: Gaëlle sur son iPad)
+    currentUser = session.user;
+    
+    // 2. On masque tous les écrans d'accueil et de connexion
+    const stepGlobal = document.getElementById('step-global');
+    const stepAuth = document.getElementById('step-auth');
+    if (stepGlobal) stepGlobal.style.display = 'none';
+    if (stepAuth) stepAuth.style.display = 'none';
+    
+    // 3. On affiche l'interface principale de la liste
+    document.getElementById('app').style.display = 'flex';
+    
+// 4. On charge les cadeaux avec ta vraie fonction
+    loadItems(); 
+  }
+});
+
 const STORAGE_BUCKET = "images"; 
 
 const GLOBAL_CODE = "Crevette";
@@ -14,28 +34,14 @@ let chosenResMode = 'public';
 let catConfig = {}; 
 let filterAvailableOnly = {}; 
 
-// 🔍 VÉRIFICATION DE LA MÉMOIRE ET DE LA CONNEXION AU LANCEMENT
-document.addEventListener('DOMContentLoaded', async () => {
+// 🔍 VÉRIFICATION DE LA MÉMOIRE AU LANCEMENT
+document.addEventListener('DOMContentLoaded', () => {
   if (localStorage.getItem('family_unlocked') === 'true') {
-    // 1. On cache l'écran du mot de passe familial
     const stepGlobal = document.getElementById('step-global');
     if (stepGlobal) stepGlobal.style.display = 'none';
     
-    // 2. On demande immédiatement à Supabase si Gaëlle (ou un autre) est connecté
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-      // ✅ Une session existe : on va direct sur l'application (la liste)
-      document.getElementById('step-auth').style.display = 'none';
-      document.getElementById('app').style.display = 'flex';
-      
-      // (Optionnel : si tu as une fonction init() ou loadItems() pour charger 
-      // les cadeaux, c'est bien de l'appeler ici)
-    } else {
-      // ❌ Pas de session (ou expirée) : on affiche l'écran de connexion (Prénom/Pass)
-      document.getElementById('step-auth').style.display = 'flex';
-      document.getElementById('app').style.display = 'none';
-    }
+    const stepAuth = document.getElementById('step-auth');
+    if (stepAuth) stepAuth.style.display = 'flex';
   }
 });
 
