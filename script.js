@@ -209,45 +209,8 @@ async function initApp() {
 //   LE SMART HEADER : Avec anti-rebond et tolérance
 // =========================================================================
 function initScrollListener() {
-  const sidebar = document.getElementById('left-sidebar');
-  const catWrapper = document.getElementById('sticky-cat-wrapper');
-  let lastScrollTop = 0;
-  
-  if (!sidebar || !catWrapper) return;
-
-  // Animation douce et fluide (0.4 seconde)
-  catWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-
-  sidebar.addEventListener('scroll', function() {
-    let scrollTop = sidebar.scrollTop;
-    
-    // 🛡️ SÉCURITÉ 1 : Ignorer le rebond physique tout en bas de la page (effet élastique iOS)
-    if (scrollTop + sidebar.clientHeight >= sidebar.scrollHeight - 10) {
-      return; 
-    }
-
-    // 🛡️ SÉCURITÉ 2 : L'AMORTISSEUR ! Il faut scroller d'au moins 15px pour déclencher l'animation
-    // C'est ça qui empêche l'effet "éclair" et rend le mouvement naturel.
-    if (Math.abs(scrollTop - lastScrollTop) < 15) {
-      return;
-    }
-    
-    // 🪄 LE MASQUAGE DE LA BARRE
-    if (scrollTop > 580) {
-      if (scrollTop > lastScrollTop) {
-        // Défilement vers le bas : on cache la barre juste au-dessus de l'écran (-120%)
-        catWrapper.style.transform = 'translateY(-120%)';
-      } else {
-        // Défilement vers le haut : on la fait redescendre à sa place (0)
-        catWrapper.style.transform = 'translateY(0)';
-      }
-    } else {
-      // Tout en haut de la page : la barre reste visible
-      catWrapper.style.transform = 'translateY(0)';
-    }
-    
-    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
-  }, { passive: true });
+  // On ne fait plus rien de spécial au scroll pour la barre ! 
+  // Le CSS "sticky" se gère tout seul comme un grand, et fini les bugs d'affichage !
 }
 
 function renderCategoryBar() {
@@ -428,7 +391,13 @@ function renderItemCard(item) {
   const imgUrl = item.photo_url || "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=300&q=80"; 
   const title = item.nom || "Cadeau";
   const price = item.prix || "0";
-  const itemUrl = item.lien || "#";
+  const itemUrl = item.lien || "";
+  
+  // On prépare le bouton lien SEULEMENT si itemUrl n'est pas vide
+  let linkButtonHtml = "";
+  if (itemUrl !== "") {
+    linkButtonHtml = `<a href="${itemUrl}" target="_blank" class="w-10 h-10 rounded-full bg-white hover:bg-[#EAF4FC] text-[#2980B9] flex items-center justify-center border border-[#D4E6F1] transition hover:scale-105 shrink-0 text-sm shadow-sm" title="Site internet">🔗</a>`;
+  }
 
   const catColor = catConfig[item.cat_id]?.text || '#2980B9';
   const catBorder = catConfig[item.cat_id]?.border || '#D4E6F1';
@@ -572,8 +541,8 @@ async function showDetail(id) {
           </span>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-          <a href="${item.lien || "#"}" target="_blank" class="flex-1 py-4 bg-white border border-[#D4E6F1] hover:bg-[#EAF4FC] text-[#2980B9] rounded-2xl font-black text-xs uppercase tracking-widest text-center transition shadow-sm">🔗 Voir sur le site</a>
+<div class="flex flex-col sm:flex-row gap-3">
+          ${item.lien ? `<a href="${item.lien}" target="_blank" class="flex-1 py-4 bg-white border border-[#D4E6F1] hover:bg-[#EAF4FC] text-[#2980B9] rounded-2xl font-black text-xs uppercase tracking-widest text-center transition shadow-sm">🔗 Voir sur le site</a>` : ''}
           ${actionButtonHtml}
         </div>
         
@@ -833,12 +802,12 @@ async function addNewItem() {
   const cat_id = document.getElementById('add-cat').value;
   const desc = document.getElementById('add-desc').value.trim();
 
-  if (!nom || !prix || !lien) { alert("Champs manquants !"); return; }
+if (!nom || !prix) { alert("Le Nom et le Prix sont obligatoires !"); return; }
   
   const { error } = await sb.from('items').insert([{ 
     nom: nom, 
     prix: parseFloat(prix), 
-    lien: lien, 
+    lien: lien || null, 
     photo_url: photo || null, 
     cat_id: cat_id,
     description: desc ? desc : null
@@ -955,12 +924,12 @@ async function saveItemChanges(id) {
   const cat_id = document.getElementById('edit-cat').value;
   const desc = document.getElementById('edit-desc').value.trim();
 
-  if (!nom || !prix || !lien) { alert("Certains champs obligatoires sont manquants !"); return; }
-
+if (!nom || !prix) { alert("Le Nom et le Prix sont obligatoires !"); return; }
+  
   const { error } = await sb.from('items').update({
     nom: nom,
     prix: parseFloat(prix),
-    lien: lien,
+    lien: lien || null,
     photo_url: photo || null,
     cat_id: cat_id,
     description: desc ? desc : null
