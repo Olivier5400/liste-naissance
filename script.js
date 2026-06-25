@@ -14,6 +14,17 @@ let chosenResMode = 'public';
 let catConfig = {}; 
 let filterAvailableOnly = {}; 
 
+// 🔍 VÉRIFICATION DE LA MÉMOIRE AU LANCEMENT
+document.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('family_unlocked') === 'true') {
+    // On cache juste le mot de passe familial
+    const stepGlobal = document.getElementById('step-global');
+    if (stepGlobal) stepGlobal.style.display = 'none';
+    
+    // On s'arrête là ! On laisse Supabase afficher le bon écran tout seul.
+  }
+});
+
 // --- CARROUSEL ---
 let slideIndex = 0;
 function rotateCarousel() {
@@ -41,9 +52,15 @@ const pastelThemes = [
 
 function checkGlobalPass() {
   if (document.getElementById('pass-global').value === GLOBAL_CODE) {
+    
+    // 💾 ON SAUVEGARDE L'ACCÈS DANS LA MÉMOIRE LONGUE ICI :
+    localStorage.setItem('family_unlocked', 'true');
+    
     document.getElementById('step-global').style.display = 'none';
     document.getElementById('step-auth').style.display = 'flex';
-  } else { alert("Code incorrect"); }
+  } else { 
+    alert("Code incorrect"); 
+  }
 }
 
 // --- NOUVELLE FONCTION : S'ENREGISTRER POUR LA PREMIÈRE FOIS ---
