@@ -172,7 +172,7 @@ function renderCategoryBar() {
       const btnDesk = document.createElement('button');
       
       // CLASSES CORRIGÉES : Tailles de texte plus petites (text-[7px] à text-[10px] max) et lettres resserrées (tracking-tight)
-      btnDesk.className = `flex-1 min-w-0 px-1 md:px-1.5 lg:px-2 py-2 rounded-xl text-[6px] md:text-[7px] lg:text-[9px] xl:text-[10px] font-black uppercase tracking-tight flex items-center justify-center gap-1 lg:gap-1.5 transition-all cursor-pointer select-none shadow-2xs ${isActive ? 'border-2 scale-105 shadow-md z-10' : 'border bg-white hover:bg-stone-50 opacity-80 hover:opacity-100'}`;
+      btnDesk.className = `flex-1 min-w-0 px-1 md:px-1.5 lg:px-2 py-2 rounded-xl text-[6px] md:text-[7px] lg:text-[9px] xl:text-[10px] font-black uppercase tracking-tight flex items-center justify-center gap-1 lg:gap-1.5 transition-all cursor-pointer select-none shadow-2xs ${isActive ? 'border scale-105 shadow-md z-10' : 'border bg-white hover:bg-stone-50 opacity-80 hover:opacity-100'}`;
       
       btnDesk.style.borderColor = isActive ? c.text : c.border;
       btnDesk.style.color = c.text;
@@ -202,11 +202,13 @@ function renderCategoryBar() {
     }
   });
 
-  const fab = document.getElementById('category-fab');
+const fab = document.getElementById('category-fab');
   if (fab) {
     const conf = catConfig[activeCategory] || catConfig['all'];
     fab.innerHTML = conf.emoji;
+    fab.style.backgroundColor = conf.bg || '#FFFFFF'; // Le fond coloré pastel
     fab.style.borderColor = conf.border || '#7FB3D5';
+    fab.style.color = conf.text || '#2980B9'; // Pour que les éventuels textes/icônes suivent
   }
 }
 
@@ -386,7 +388,7 @@ function renderItemCard(item) {
   }
 
   return `
-    <div onclick="showDetail('${item.id}')" class="w-full bg-white/95 backdrop-blur-sm rounded-2xl p-4 border border-white shadow-sm flex flex-col transition hover:scale-[1.01] hover:shadow-md cursor-pointer text-left">
+    <div onclick="showDetail('${item.id}')" class="w-full bg-white rounded-2xl p-4 border border-white shadow-sm flex flex-col transition hover:scale-[1.01] hover:shadow-md cursor-pointer text-left">
       <div class="flex justify-between items-center w-full gap-2 mb-2.5">
         <h4 class="font-black text-stone-800 text-sm md:text-base truncate flex-1" title="${title}">${title}</h4>
         ${statusBadge}
