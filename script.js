@@ -205,12 +205,14 @@ function renderCategoryBar() {
 const fab = document.getElementById('category-fab');
   if (fab) {
     const conf = catConfig[activeCategory] || catConfig['all'];
-    fab.innerHTML = conf.emoji;
-    fab.style.backgroundColor = conf.bg || '#FFFFFF'; // Le fond coloré pastel
+    const fabLabel = activeCategory === 'all' ? 'Catégories' : conf.label;
+    
+    fab.innerHTML = `<span class="text-lg md:text-xl shrink-0">${conf.emoji}</span> <span class="text-[11px] font-black uppercase tracking-widest truncate max-w-[130px]">${fabLabel}</span>`;
+    fab.style.backgroundColor = conf.bg || '#FFFFFF';
     fab.style.borderColor = conf.border || '#7FB3D5';
-    fab.style.color = conf.text || '#2980B9'; // Pour que les éventuels textes/icônes suivent
+    fab.style.color = conf.text || '#2980B9';
   }
-}
+
 
 function selectCategoryAction(catId) {
   activeCategory = catId;
