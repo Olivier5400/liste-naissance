@@ -906,6 +906,39 @@ document.addEventListener('keydown', (event) => {
 });
 
 // =========================================================================
+//   GESTURE MOBILE : SWIPE BORD GAUCHE (Retour / Annuler)
+// =========================================================================
+let tStartX = 0, tStartY = 0;
+
+document.addEventListener('touchstart', (e) => {
+  tStartX = e.changedTouches[0].screenX;
+  tStartY = e.changedTouches[0].screenY;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  const resModal = document.getElementById('reservation-modal');
+  const detailsPanel = document.getElementById('details-panel');
+  
+  const isResOpen = resModal && !resModal.classList.contains('opacity-0');
+  const isDetailsOpen = detailsPanel && detailsPanel.style.display === 'flex';
+
+  if (!isResOpen && !isDetailsOpen) return;
+
+  const deltaX = e.changedTouches[0].screenX - tStartX;
+  const deltaY = Math.abs(e.changedTouches[0].screenY - tStartY);
+
+  // Départ < 85px du bord gauche + glissé vers la droite > 65px + pas de scroll vertical brusque
+  if (tStartX < 85 && deltaX > 65 && deltaY < 55) {
+    if (isResOpen) {
+      closeReservationModal();
+    } else if (isDetailsOpen) {
+      const premierBouton = document.querySelector('#details-content button');
+      if (premierBouton) premierBouton.click(); // Rétro-pédalage automatique exact !
+    }
+  }
+}, { passive: true });
+
+// =========================================================================
 //   OUTILS D'ADMINISTRATION : MOD DEV
 // =========================================================================
 
