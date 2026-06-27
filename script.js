@@ -223,14 +223,33 @@ function selectCategoryAction(catId) {
 }
 
 function openCategorySheet() {
+  // 1. On affiche le fond grisé
   document.getElementById('category-backdrop').classList.remove('opacity-0', 'pointer-events-none');
-  document.getElementById('category-sheet').classList.remove('translate-y-full');
+  
+  // 2. La bulle s'expanse et apparaît
+  const sheet = document.getElementById('category-sheet');
+  sheet.classList.remove('scale-50', 'opacity-0', 'pointer-events-none');
+  sheet.classList.add('scale-100', 'opacity-100');
+  
+  // 3. La capsule s'efface en se rétractant (illusion de fusion)
+  const fab = document.getElementById('category-fab');
+  if (fab) fab.classList.add('opacity-0', 'pointer-events-none', 'scale-75');
 }
 
 function closeCategorySheet() {
+  // 1. On cache le fond grisé
   document.getElementById('category-backdrop').classList.add('opacity-0', 'pointer-events-none');
-  document.getElementById('category-sheet').classList.add('translate-y-full');
+  
+  // 2. La bulle se rétracte et disparaît
+  const sheet = document.getElementById('category-sheet');
+  sheet.classList.add('scale-50', 'opacity-0', 'pointer-events-none');
+  sheet.classList.remove('scale-100', 'opacity-100');
+  
+  // 3. La capsule rebondit et réapparaît
+  const fab = document.getElementById('category-fab');
+  if (fab) fab.classList.remove('opacity-0', 'pointer-events-none', 'scale-75');
 }
+
 
 async function loadItems() {
   const { data: items, error: err1 } = await sb.from('items').select('*').order('nom', { ascending: true });
