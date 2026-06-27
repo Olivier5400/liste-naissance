@@ -553,26 +553,28 @@ function closeDetails() {
   
   if (!panel || panel.style.display === 'none') return;
 
-  // 1. Tour de magie : on pulvérise le fond bleu instantanément !
-  // (Comme la carte blanche couvre 100% de l'écran mobile, l'œil ne voit rien au t=0)
-  panel.style.backgroundColor = 'transparent';
+  // Aiguillage : moins de 768px = Smartphone (< md) | au-dessus = PC / Tablette (>= md)
+  if (window.innerWidth < 768) {
+    // --- 📱 COMPORTEMENT SMARTPHONE : Glissé rapide vers la droite ---
+    panel.style.backgroundColor = 'transparent';
+    contentEl.style.transition = 'transform 175ms cubic-bezier(0.2, 0.8, 0.2, 1)';
+    contentEl.style.transform = 'translateX(100%)';
 
-  // 2. Glissement sec et rapide vers la droite (175ms au lieu de 250ms, zéro opacité)
-  contentEl.style.transition = 'transform 175ms cubic-bezier(0.2, 0.8, 0.2, 1)';
-  contentEl.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      panel.style.display = 'none';
+      document.body.classList.remove('overflow-hidden');
+      
+      panel.style.backgroundColor = '';
+      contentEl.style.transform = '';
+      contentEl.style.transition = '';
+    }, 165);
 
-  // 3. Nettoyage chirurgical juste avant la fin de l'animation
-  setTimeout(() => {
+  } else {
+    // --- 💻 COMPORTEMENT ORDINATEUR : Disparition immédiate propre ---
     panel.style.display = 'none';
     document.body.classList.remove('overflow-hidden');
-    
-    // Reset indispensable pour la prochaine ouverture
-    panel.style.backgroundColor = '';
-    contentEl.style.transform = '';
-    contentEl.style.transition = '';
-  }, 165);
+  }
 }
-
 
 function openReservationModal(id) {
   selectedItemId = id; document.getElementById('custom-pseudo-input').value = ""; setReservationMode('public'); 
