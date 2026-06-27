@@ -549,8 +549,25 @@ async function showDetail(id) {
 
 function closeDetails() {
   const panel = document.getElementById('details-panel');
-  if(panel) panel.style.display = 'none';
-  document.body.classList.remove('overflow-hidden'); // 🔓 Rend le scroll
+  const contentEl = document.getElementById('details-content');
+  
+  if (!panel || panel.style.display === 'none') return;
+
+  // 1. L'illusion d'optique : glissement rapide vers la droite + fondu en sortie
+  contentEl.style.transition = 'transform 250ms ease-in, opacity 200ms ease-in';
+  contentEl.style.transform = 'translateX(100%)';
+  contentEl.style.opacity = '0';
+
+  // 2. On attend la fin des 250ms pour cacher le panneau et RÉINITIALISER la physique
+  setTimeout(() => {
+    panel.style.display = 'none';
+    document.body.classList.remove('overflow-hidden');
+    
+    // ⚠️ Remise à zéro vitale : sinon au prochain cadeau cliqué, la fenêtre s'ouvrira hors-écran !
+    contentEl.style.transform = '';
+    contentEl.style.opacity = '';
+    contentEl.style.transition = '';
+  }, 240);
 }
 
 function openReservationModal(id) {
