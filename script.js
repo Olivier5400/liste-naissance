@@ -212,7 +212,7 @@ const fab = document.getElementById('category-fab');
     fab.style.borderColor = conf.border || '#7FB3D5';
     fab.style.color = conf.text || '#2980B9';
   }
-
+}
 
 function selectCategoryAction(catId) {
   activeCategory = catId;
