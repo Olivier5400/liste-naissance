@@ -553,22 +553,26 @@ function closeDetails() {
   
   if (!panel || panel.style.display === 'none') return;
 
-  // 1. L'illusion d'optique : glissement rapide vers la droite + fondu en sortie
-  contentEl.style.transition = 'transform 250ms ease-in, opacity 200ms ease-in';
-  contentEl.style.transform = 'translateX(100%)';
-  contentEl.style.opacity = '0';
+  // 1. Tour de magie : on pulvérise le fond bleu instantanément !
+  // (Comme la carte blanche couvre 100% de l'écran mobile, l'œil ne voit rien au t=0)
+  panel.style.backgroundColor = 'transparent';
 
-  // 2. On attend la fin des 250ms pour cacher le panneau et RÉINITIALISER la physique
+  // 2. Glissement sec et rapide vers la droite (175ms au lieu de 250ms, zéro opacité)
+  contentEl.style.transition = 'transform 175ms cubic-bezier(0.2, 0.8, 0.2, 1)';
+  contentEl.style.transform = 'translateX(100%)';
+
+  // 3. Nettoyage chirurgical juste avant la fin de l'animation
   setTimeout(() => {
     panel.style.display = 'none';
     document.body.classList.remove('overflow-hidden');
     
-    // ⚠️ Remise à zéro vitale : sinon au prochain cadeau cliqué, la fenêtre s'ouvrira hors-écran !
+    // Reset indispensable pour la prochaine ouverture
+    panel.style.backgroundColor = '';
     contentEl.style.transform = '';
-    contentEl.style.opacity = '';
     contentEl.style.transition = '';
-  }, 240);
+  }, 165);
 }
+
 
 function openReservationModal(id) {
   selectedItemId = id; document.getElementById('custom-pseudo-input').value = ""; setReservationMode('public'); 
