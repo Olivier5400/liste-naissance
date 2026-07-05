@@ -290,7 +290,7 @@ function renderItemsLayout() {
     <div class="lg:hidden w-full bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-[#D4E6F1] shadow-2xs text-left mb-8 select-text relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-black text-stone-800 text-xs md:text-sm uppercase tracking-wider">Chère famille et chers amis, ✨</h3>
-        <span class="text-3xl md:text-4xl animate-wave inline-block">🧸</span>
+        <span onclick="openSecretGame()" class="text-3xl md:text-4xl animate-wave inline-block cursor-pointer active:scale-125 transition-transform">🧸</span>
       </div>
       <p class="text-xs md:text-sm text-stone-500 leading-relaxed mb-5 font-medium">
         Vous l'attendiez avec impatience ? (ou pas 😅) Voici la liste de naissance pour notre crevette d'amour 🐣 ! Aucune obligation, seulement des idées pour vous éviter les doublons (et limiter la fièvre acheteuse 🤪). <br><br>
@@ -304,8 +304,31 @@ function renderItemsLayout() {
       </div>
     </div>
   `;
-
-  let structureHtml = masterWelcomeCard;
+  
+  const interactionCards = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <!-- Carte Quizz -->
+      <div onclick="openQuizModal()" class="bg-[#F4F9FB] hover:bg-[#E2EFF6] border border-[#D4E6F1] rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300 active:scale-95 shadow-sm">
+        <div class="text-4xl drop-shadow-sm">🔮</div>
+        <div>
+          <h3 class="font-black text-[#2980B9] text-sm uppercase tracking-wider">Le Bébé Quizz</h3>
+          <p class="text-xs text-stone-500 font-medium mt-1">Vos pronostics avant le 19 octobre !</p>
+        </div>
+      </div>
+      
+      <!-- Carte Livre d'Or -->
+      <div onclick="openGuestbookModal()" class="bg-[#FFF4F4] hover:bg-[#FCE0DE] border border-[#FADBD8] rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300 active:scale-95 shadow-sm">
+        <div class="text-4xl drop-shadow-sm">💌</div>
+        <div>
+          <h3 class="font-black text-[#C0392B] text-sm uppercase tracking-wider">Capsule Temporelle</h3>
+          <p class="text-xs text-stone-500 font-medium mt-1">Laissez-nous un mot ou une vidéo</p>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // 🚂 C'est ICI que la soudure se fait ! On additionne les deux blocs.
+  let structureHtml = masterWelcomeCard + interactionCards;
 
   catsToRender.forEach(catId => {
     const allCatItems = itemsData.filter(item => item.cat_id === catId);
@@ -981,6 +1004,412 @@ document.addEventListener('touchend', (e) => {
     }
   }
 }, { passive: true });
+
+// =========================================================================
+//   MOTEUR D'ENVOI MEDIAS (CLOUDINARY) ☁️
+// =========================================================================
+async function uploadToCloudinary(file) {
+  const cloudName = "l9pt6zgg"; // Ton ID officiel est branché !
+  const uploadPreset = "crevette_medias";
+  
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+
+  try {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+      method: "POST",
+      body: formData
+    });
+    const data = await response.json();
+    return data.secure_url; 
+  } catch (error) {
+    console.error("Erreur d'envoi Cloudinary :", error);
+    return null;
+  }
+}
+
+// =========================================================================
+//   LE BÉBÉ QUIZZ 🔮 (AVEC SÉCURITÉ TEMPORELLE DU 19 SEPTEMBRE)
+// =========================================================================
+async function openQuizModal() {
+  // 1. On vérifie si l'invité a déjà enregistré un pronostic
+  const { data: existingData, error: fetchError } = await sb
+    .from('pronostics')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+
+  const isUpdate = !!existingData;
+  const p = existingData || {};
+
+  // 🕒 2. GESTION DE LA DATE LIMITE
+  const dateLimite = new Date('2026-09-19T23:59:59'); // Verrouillage le 19 septembre à minuit
+  const dateActuelle = new Date();
+  
+  const isUpdateLocked = isUpdate && (dateActuelle > dateLimite);
+  const isFirstTimeLate = !isUpdate && (dateActuelle > dateLimite);
+  
+  // 💬 Message dynamique selon la situation
+  let messageTop = '';
+  if (isUpdateLocked) {
+    messageTop = '🔒 Vos pronostics sont définitivement scellés ! Rendez-vous à la naissance.';
+  } else if (isUpdate) {
+    messageTop = 'Vos pronostics sont mémorisés. Vous pouvez les modifier jusqu\'au 19 septembre !';
+  } else if (isFirstTimeLate) {
+    messageTop = 'À vous de jouer ! ⚠️ La date limite étant passée, ce choix sera définitif du premier coup.';
+  } else {
+    messageTop = 'À vous de jouer ! Vous pourrez modifier vos choix jusqu\'au 19 septembre.';
+  }
+
+  // 🎨 Styles dynamiques (Grisé si verrouillé)
+  const lockAttr = isUpdateLocked ? 'disabled' : '';
+  const inputClass = isUpdateLocked 
+    ? "w-full bg-stone-100 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-500 cursor-not-allowed opacity-70"
+    : "w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#3498DB]";
+    
+  const tierceClass = isUpdateLocked 
+    ? "w-full mt-1 bg-stone-100 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-500 cursor-not-allowed opacity-70"
+    : "w-full mt-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#3498DB]";
+
+  // 3. Création de la fenêtre
+  let modal = document.getElementById('quiz-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'quiz-modal';
+    modal.className = 'fixed inset-0 z-[80] bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300';
+    document.body.appendChild(modal);
+  }
+
+  // 4. Injection du formulaire complet
+  modal.innerHTML = `
+    <div class="bg-white w-full max-w-2xl rounded-[2rem] p-6 shadow-2xl transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="quiz-content">
+      <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-2">
+        <h2 class="text-xl font-black text-[#2980B9] flex items-center gap-2">🔮 Le Bébé Quizz</h2>
+        <button onclick="closeQuizModal()" class="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center text-stone-500 font-bold hover:bg-stone-200 transition cursor-pointer">✕</button>
+      </div>
+      
+      <div class="bg-[#F4F9FB] border border-[#D4E6F1] rounded-xl p-4 mb-6 text-center">
+        <p class="text-sm text-[#2980B9] font-medium">${messageTop}</p>
+      </div>
+
+      <div class="space-y-6">
+        <!-- 1. LE PRÉNOM -->
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100">
+          <h3 class="text-sm font-black text-stone-700 uppercase tracking-wider mb-3">1. Le Prénom (Tiercé)</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div><label class="text-[10px] text-stone-500 font-bold">Choix 1 (20 pts)</label><input type="text" id="qz-p1" value="${p.prenom_1 || ''}" ${lockAttr} class="${tierceClass}"></div>
+            <div><label class="text-[10px] text-stone-500 font-bold">Choix 2 (12 pts)</label><input type="text" id="qz-p2" value="${p.prenom_2 || ''}" ${lockAttr} class="${tierceClass}"></div>
+            <div><label class="text-[10px] text-stone-500 font-bold">Choix 3 (5 pts)</label><input type="text" id="qz-p3" value="${p.prenom_3 || ''}" ${lockAttr} class="${tierceClass}"></div>
+          </div>
+        </div>
+
+        <!-- 2. MENSURATIONS & TIMING -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">2. Poids (en g)</label>
+            <input type="number" id="qz-poids" placeholder="ex: 3450" value="${p.poids || ''}" ${lockAttr} class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">3. Taille (en cm)</label>
+            <input type="number" step="0.5" id="qz-taille" placeholder="ex: 51" value="${p.taille || ''}" ${lockAttr} class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">4. Date prévue</label>
+            <input type="date" id="qz-date" value="${p.date_naissance || ''}" ${lockAttr} class="${inputClass}">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">5. Heure</label>
+            <input type="time" id="qz-heure" value="${p.heure_naissance || ''}" ${lockAttr} class="${inputClass}">
+          </div>
+        </div>
+
+        <!-- 3. PHYSIQUE -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">6. Cheveux</label>
+            <select id="qz-cheveux" ${lockAttr} class="${inputClass}">
+              <option value="" disabled ${!p.cheveux ? 'selected' : ''}>Choisir...</option>
+              <option value="Chauve" ${p.cheveux === 'Chauve' ? 'selected' : ''}>Chauve (Boule de billard)</option>
+              <option value="Brun" ${p.cheveux === 'Brun' ? 'selected' : ''}>Bruns</option>
+              <option value="Blond" ${p.cheveux === 'Blond' ? 'selected' : ''}>Blonds</option>
+              <option value="Chatain" ${p.cheveux === 'Chatain' ? 'selected' : ''}>Châtains</option>
+              <option value="Roux" ${p.cheveux === 'Roux' ? 'selected' : ''}>Roux</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">7. Yeux</label>
+            <select id="qz-yeux" ${lockAttr} class="${inputClass}">
+              <option value="" disabled ${!p.yeux ? 'selected' : ''}>Choisir...</option>
+              <option value="Bleus" ${p.yeux === 'Bleus' ? 'selected' : ''}>Bleus</option>
+              <option value="Marrons" ${p.yeux === 'Marrons' ? 'selected' : ''}>Marrons</option>
+              <option value="Verts" ${p.yeux === 'Verts' ? 'selected' : ''}>Verts</option>
+              <option value="Gris" ${p.yeux === 'Gris' ? 'selected' : ''}>Gris</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. LE JOUR J -->
+        <div>
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">8. Durée du travail</label>
+          <select id="qz-duree" ${lockAttr} class="${inputClass}">
+            <option value="" disabled ${!p.duree_travail ? 'selected' : ''}>Choisir...</option>
+            <option value="Express" ${p.duree_travail === 'Express' ? 'selected' : ''}>Express (< 6h)</option>
+            <option value="Classique" ${p.duree_travail === 'Classique' ? 'selected' : ''}>Classique (6h à 12h)</option>
+            <option value="Longue" ${p.duree_travail === 'Longue' ? 'selected' : ''}>Longue (12h à 18h)</option>
+            <option value="Marathon" ${p.duree_travail === 'Marathon' ? 'selected' : ''}>Marathon (18h à 24h)</option>
+            <option value="Heroique" ${p.duree_travail === 'Heroique' ? 'selected' : ''}>Mode Héroïque (> 24h)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">9. Activité de Papa au top départ</label>
+          <select id="qz-papa" ${lockAttr} class="${inputClass}">
+            <option value="" disabled ${!p.papa_activite ? 'selected' : ''}>Choisir...</option>
+            <option value="Sommeil" ${p.papa_activite === 'Sommeil' ? 'selected' : ''}>En plein sommeil profond</option>
+            <option value="Travail" ${p.papa_activite === 'Travail' ? 'selected' : ''}>Au travail (en consultation)</option>
+            <option value="Ecran" ${p.papa_activite === 'Ecran' ? 'selected' : ''}>Devant un écran (console/code)</option>
+            <option value="Repas" ${p.papa_activite === 'Repas' ? 'selected' : ''}>À table en train de manger</option>
+            <option value="Panique" ${p.papa_activite === 'Panique' ? 'selected' : ''}>Déjà en panique avec le sac</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">10. "Météo" de Maman au top départ</label>
+          <select id="qz-maman" ${lockAttr} class="${inputClass}">
+            <option value="" disabled ${!p.maman_meteo ? 'selected' : ''}>Choisir...</option>
+            <option value="Soleil" ${p.maman_meteo === 'Soleil' ? 'selected' : ''}>☀️ Grand Soleil Zen (Maîtrise totale)</option>
+            <option value="Tornade" ${p.maman_meteo === 'Tornade' ? 'selected' : ''}>🌪️ Tornade Logistique (Où est le sac ?)</option>
+            <option value="Orage" ${p.maman_meteo === 'Orage' ? 'selected' : ''}>⛈️ Orage Magnétique (Ne me touche pas !)</option>
+            <option value="Brouillard" ${p.maman_meteo === 'Brouillard' ? 'selected' : ''}>🌫️ Brouillard Mystique (C'est le chou-fleur ?)</option>
+            <option value="Feu" ${p.maman_meteo === 'Feu' ? 'selected' : ''}>🥳 Feu d'artifice (Sortez-le, je veux du saucisson !)</option>
+          </select>
+        </div>
+
+        ${isUpdateLocked ? `
+          <div class="w-full py-4 bg-stone-200 text-stone-500 rounded-xl font-black text-sm uppercase tracking-widest text-center shadow-inner select-none cursor-not-allowed">
+            🔒 Paris verrouillés
+          </div>
+        ` : `
+          <button id="qz-submit-btn" onclick="submitQuiz(${isUpdate})" class="w-full py-4 bg-[#2980B9] hover:bg-[#21618C] text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-md transition active:scale-95 flex justify-center items-center gap-2 cursor-pointer">
+            <span>${isUpdate ? '🔄 Mettre à jour mes paris' : '🎲 Valider mes pronostics'}</span>
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove('opacity-0', 'pointer-events-none');
+  setTimeout(() => document.getElementById('quiz-content').classList.remove('scale-95'), 10);
+}
+
+function closeQuizModal() {
+  const modal = document.getElementById('quiz-modal');
+  if (modal) {
+    document.getElementById('quiz-content').classList.add('scale-95');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+  }
+}
+
+async function submitQuiz(isUpdate) {
+  const btn = document.getElementById('qz-submit-btn');
+  
+  // Collecte de toutes les réponses
+  const payload = {
+    user_id: currentUser.id,
+    prenom_1: document.getElementById('qz-p1').value.trim() || null,
+    prenom_2: document.getElementById('qz-p2').value.trim() || null,
+    prenom_3: document.getElementById('qz-p3').value.trim() || null,
+    poids: document.getElementById('qz-poids').value ? parseInt(document.getElementById('qz-poids').value) : null,
+    taille: document.getElementById('qz-taille').value ? parseFloat(document.getElementById('qz-taille').value) : null,
+    date_naissance: document.getElementById('qz-date').value || null,
+    heure_naissance: document.getElementById('qz-heure').value || null,
+    cheveux: document.getElementById('qz-cheveux').value || null,
+    yeux: document.getElementById('qz-yeux').value || null,
+    duree_travail: document.getElementById('qz-duree').value || null,
+    papa_activite: document.getElementById('qz-papa').value || null,
+    maman_meteo: document.getElementById('qz-maman').value || null
+  };
+
+  // Petite sécurité pour éviter les envois vides par erreur
+  if (!payload.prenom_1 || !payload.poids || !payload.date_naissance) {
+    alert("Veuillez remplir au moins le choix 1 du prénom, le poids et la date pour valider !");
+    return;
+  }
+
+  // Animation de chargement
+  btn.disabled = true;
+  btn.innerHTML = `<span class="animate-spin text-xl">⏳</span> Enregistrement...`;
+  const originalClasses = btn.className;
+  btn.className = "w-full py-4 bg-stone-400 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-md flex justify-center items-center gap-2";
+
+  let error;
+  
+  // Soit on met à jour, soit on crée une nouvelle ligne
+  if (isUpdate) {
+    const res = await sb.from('pronostics').update(payload).eq('user_id', currentUser.id);
+    error = res.error;
+  } else {
+    const res = await sb.from('pronostics').insert([payload]);
+    error = res.error;
+  }
+
+  if (error) {
+    alert("Erreur de sauvegarde : " + error.message);
+    btn.disabled = false;
+    btn.innerHTML = isUpdate ? '🔄 Mettre à jour mes paris' : '🎲 Valider mes pronostics';
+    btn.className = originalClasses;
+  } else {
+    // Succès !
+    btn.innerHTML = `✅ Pronostics sauvegardés !`;
+    btn.className = "w-full py-4 bg-green-600 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-md transition flex justify-center items-center gap-2";
+    
+    setTimeout(() => {
+      closeQuizModal();
+    }, 1500);
+  }
+}
+
+// =========================================================================
+//   CAPSULE TEMPORELLE (LIVRE D'OR) 💌
+// =========================================================================
+async function openGuestbookModal() {
+  // 1. On compte discrètement combien de messages sont déjà dans la base
+  const { count, error } = await sb.from('livre_or').select('*', { count: 'exact', head: true });
+  const nbMessages = count || 0;
+
+  // 2. On crée la fenêtre modale si elle n'existe pas encore
+  let modal = document.getElementById('guestbook-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'guestbook-modal';
+    modal.className = 'fixed inset-0 z-[80] bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300';
+    document.body.appendChild(modal);
+  }
+
+  // 3. On injecte le design
+  modal.innerHTML = `
+    <div class="bg-white w-full max-w-lg rounded-[2rem] p-6 shadow-2xl transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="guestbook-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-black text-[#C0392B] flex items-center gap-2">💌 Capsule Temporelle</h2>
+        <button onclick="closeGuestbookModal()" class="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center text-stone-500 font-bold hover:bg-stone-200 transition cursor-pointer">✕</button>
+      </div>
+      
+      <div class="bg-[#FFF4F4] border border-[#FADBD8] rounded-xl p-4 mb-5 text-center">
+        <p class="text-sm text-[#C0392B] font-medium">Déjà <strong class="text-lg">${nbMessages}</strong> messages bien au chaud !</p>
+        <p class="text-xs text-stone-500 mt-1">Ils ne seront dévoilés qu'à la naissance de la crevette 🐣</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">Votre Prénom / Surnom</label>
+          <input type="text" id="gb-auteur" placeholder="ex: Tonton Julien" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#C0392B] transition-colors">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">Votre Petit Mot</label>
+          <textarea id="gb-message" rows="4" placeholder="Un conseil, un vœu, une anecdote..." class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#C0392B] transition-colors resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">📸 Photo ou Vidéo (Optionnel)</label>
+          <input type="file" id="gb-media" accept="image/*,video/*" class="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#FCE0DE] file:text-[#C0392B] hover:file:bg-[#FADBD8] transition-all cursor-pointer">
+          <p class="text-[10px] text-stone-400 mt-1 pl-1">Formats acceptés : JPG, PNG, MP4, MOV (Max 100 Mo)</p>
+        </div>
+
+        <button id="gb-submit-btn" onclick="submitGuestbook()" class="w-full mt-2 py-4 bg-[#C0392B] hover:bg-[#A93226] text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-md transition active:scale-95 flex justify-center items-center gap-2 cursor-pointer">
+          <span>📮 Sceller dans la capsule</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  // 4. On affiche avec une petite animation fluide
+  modal.classList.remove('opacity-0', 'pointer-events-none');
+  setTimeout(() => document.getElementById('guestbook-content').classList.remove('scale-95'), 10);
+}
+
+function closeGuestbookModal() {
+  const modal = document.getElementById('guestbook-modal');
+  if (modal) {
+    document.getElementById('guestbook-content').classList.add('scale-95');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+  }
+}
+
+async function submitGuestbook() {
+  const auteur = document.getElementById('gb-auteur').value.trim();
+  const message = document.getElementById('gb-message').value.trim();
+  const fileInput = document.getElementById('gb-media');
+  const btn = document.getElementById('gb-submit-btn');
+
+  // Sécurités de base
+  if (!auteur) { alert("N'oubliez pas de signer votre message !"); return; }
+  if (!message && fileInput.files.length === 0) { alert("Laissez au moins un petit mot ou un média !"); return; }
+
+  // 🔄 Passage en mode chargement (On bloque le bouton)
+  btn.disabled = true;
+  btn.innerHTML = `<span class="animate-spin text-xl">⏳</span> Préparation...`;
+  btn.classList.replace('bg-[#C0392B]', 'bg-stone-400');
+  btn.classList.replace('hover:bg-[#A93226]', 'hover:bg-stone-400');
+
+  let mediaUrl = null;
+  
+  // ☁️ Si une photo/vidéo est sélectionnée, on l'envoie d'abord à Cloudinary
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    
+    if (file.size > 100 * 1024 * 1024) { // Limite à 100 Mo pour éviter les crashs mobiles
+       alert("Oups ! La vidéo est un peu trop lourde (100 Mo maximum).");
+       resetBtn();
+       return;
+    }
+    
+    btn.innerHTML = `<span class="animate-pulse text-xl">☁️</span> Envoi du média en cours...`;
+    mediaUrl = await uploadToCloudinary(file);
+    
+    if (!mediaUrl) {
+      alert("Erreur lors de l'envoi de la vidéo/photo. Veuillez réessayer.");
+      resetBtn();
+      return;
+    }
+  }
+
+  // 💾 Enregistrement dans Supabase
+  btn.innerHTML = `<span class="animate-spin text-xl">💾</span> Scellement...`;
+
+  const { error } = await sb.from('livre_or').insert([{
+    user_id: currentUser.id, // Lie le message à la session sécurisée de l'invité
+    auteur: auteur,
+    message: message || null,
+    media_url: mediaUrl
+  }]);
+
+  if (error) {
+    alert("Erreur de sauvegarde : " + error.message);
+    resetBtn();
+  } else {
+    // 🎉 Succès !
+    btn.innerHTML = `✅ Message Scellé !`;
+    btn.classList.replace('bg-stone-400', 'bg-green-600');
+    
+    // On ferme la fenêtre après 1.5 secondes
+    setTimeout(() => {
+      closeGuestbookModal();
+      // On rafraîchit l'affichage en arrière-plan pour mettre à jour le compteur
+      if (document.getElementById('guestbook-modal')) {
+         document.getElementById('guestbook-modal').remove();
+      }
+    }, 1500);
+  }
+
+  function resetBtn() {
+    btn.disabled = false;
+    btn.innerHTML = `📮 Sceller dans la capsule`;
+    btn.classList.replace('bg-stone-400', 'bg-[#C0392B]');
+    btn.classList.replace('hover:bg-stone-400', 'hover:bg-[#A93226]');
+  }
+}
 
 // =========================================================================
 //   OUTILS D'ADMINISTRATION : MOD DEV
