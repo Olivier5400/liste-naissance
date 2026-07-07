@@ -1105,7 +1105,7 @@ async function openQuizModal() {
         </div>
 
         <!-- 2. MENSURATIONS & TIMING -->
-        <div class="grid grid-cols-2 gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">2. Poids (en g)</label>
             <input type="number" id="qz-poids" placeholder="ex: 3450" value="${p.poids || ''}" ${lockAttr} class="${inputClass}">
@@ -1125,7 +1125,7 @@ async function openQuizModal() {
         </div>
 
         <!-- 3. PHYSIQUE -->
-        <div class="grid grid-cols-2 gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">6. Cheveux</label>
             <select id="qz-cheveux" ${lockAttr} class="${inputClass}">
@@ -1181,7 +1181,6 @@ async function openQuizModal() {
             <option value="Soleil" ${p.maman_meteo === 'Soleil' ? 'selected' : ''}>☀️ Grand Soleil Zen (Maîtrise totale)</option>
             <option value="Tornade" ${p.maman_meteo === 'Tornade' ? 'selected' : ''}>🌪️ Tornade Logistique (Où est le sac ?)</option>
             <option value="Orage" ${p.maman_meteo === 'Orage' ? 'selected' : ''}>⛈️ Orage Magnétique (Ne me touche pas !)</option>
-            <option value="Brouillard" ${p.maman_meteo === 'Brouillard' ? 'selected' : ''}>🌫️ Brouillard Mystique (C'est le chou-fleur ?)</option>
             <option value="Feu" ${p.maman_meteo === 'Feu' ? 'selected' : ''}>🥳 Feu d'artifice (Sortez-le, je veux du saucisson !)</option>
           </select>
         </div>
