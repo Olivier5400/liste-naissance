@@ -1199,11 +1199,10 @@ async function openQuizModal() {
           <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">10. "Météo" de Maman au top départ</label>
           <select id="qz-maman" ${lockAttr} class="${inputClass}">
             <option value="" disabled ${!p.maman_meteo ? 'selected' : ''}>Choisir...</option>
-            <option value="Soleil" ${p.maman_meteo === 'Soleil' ? 'selected' : ''}>☀️ Grand Soleil Zen (Maîtrise totale)</option>
-            <option value="Tornade" ${p.maman_meteo === 'Tornade' ? 'selected' : ''}>🌪️ Tornade Logistique (Où est le sac ?)</option>
-            <option value="Orage" ${p.maman_meteo === 'Orage' ? 'selected' : ''}>⛈️ Orage Magnétique (Ne me touche pas !)</option>
-            <option value="Brouillard" ${p.maman_meteo === 'Brouillard' ? 'selected' : ''}>🌫️ Brouillard Mystique (C'est le chou-fleur ?)</option>
-            <option value="Feu" ${p.maman_meteo === 'Feu' ? 'selected' : ''}>🥳 Feu d'artifice (Sortez-le, je veux du saucisson !)</option>
+            <option value="Soleil" ${p.maman_meteo === 'Soleil' ? 'selected' : ''}>☀️ Grand Soleil Zen : Maîtrise totale</option>
+            <option value="Tornade" ${p.maman_meteo === 'Tornade' ? 'selected' : ''}>🌪️ Tornade Logistique : Où est le sac ?</option>
+            <option value="Orage" ${p.maman_meteo === 'Orage' ? 'selected' : ''}>⛈️ Orage Magnétique : Ne me touche pas !</option>
+            <option value="Tonnerre" ${p.maman_meteo === 'Tonnerre' ? 'selected' : ''}>⚡️ Tonnerre Frénétique : On y va, on y va !</option>
           </select>
         </div>
 
