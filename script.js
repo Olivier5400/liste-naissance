@@ -1051,7 +1051,7 @@ async function uploadToCloudinary(file) {
 }
 
 // =========================================================================
-//   LE BÉBÉ QUIZZ 🔮 (AVEC SÉCURITÉ TEMPORELLE & CORRECTION iOS)
+//   LE BÉBÉ QUIZZ 🔮 (AVEC SÉCURITÉ ANTI-DÉBORDEMENT IOS EXTRÊME)
 // =========================================================================
 async function openQuizModal() {
   // 1. On vérifie si l'invité a déjà enregistré un pronostic
@@ -1082,17 +1082,17 @@ async function openQuizModal() {
     messageTop = 'À vous de jouer ! Vous pourrez modifier vos choix jusqu\'au 19 septembre.';
   }
 
-  // 🎨 Styles dynamiques - CORRECTION IOS : Ajout de "min-w-0" et "px-3" au lieu de px-4
+  // 🎨 Styles dynamiques - FORCE BRUTE IOS : appearance-none, max-w-full, min-w-0
   const lockAttr = isUpdateLocked ? 'disabled' : '';
   const inputClass = isUpdateLocked 
-    ? "w-full min-w-0 bg-stone-100 border border-stone-200 rounded-xl px-3 py-3 text-sm text-stone-500 cursor-not-allowed opacity-70"
-    : "w-full min-w-0 bg-stone-50 border border-stone-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-[#3498DB] transition-colors";
+    ? "appearance-none w-full max-w-full min-w-0 block bg-stone-100 border border-stone-200 rounded-xl px-3 py-3 text-sm text-stone-500 cursor-not-allowed opacity-70"
+    : "appearance-none w-full max-w-full min-w-0 block bg-stone-50 border border-stone-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-[#3498DB] transition-colors";
     
   const tierceClass = isUpdateLocked 
-    ? "w-full min-w-0 mt-1 bg-stone-100 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-500 cursor-not-allowed opacity-70"
-    : "w-full min-w-0 mt-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#3498DB] transition-colors";
+    ? "appearance-none w-full max-w-full min-w-0 block mt-1 bg-stone-100 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-500 cursor-not-allowed opacity-70"
+    : "appearance-none w-full max-w-full min-w-0 block mt-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#3498DB] transition-colors";
 
-  // 3. Création de la fenêtre (ajout de w-full pour sécuriser l'enveloppe)
+  // 3. Création de la fenêtre
   let modal = document.getElementById('quiz-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -1101,11 +1101,11 @@ async function openQuizModal() {
     document.body.appendChild(modal);
   }
 
-  // 4. Injection du formulaire complet (CORRECTION : overflow-x-hidden et p-4 sur mobile)
+  // 4. Injection du formulaire complet
   modal.innerHTML = `
     <div class="bg-white w-full max-w-2xl rounded-[2rem] p-4 sm:p-6 shadow-2xl transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto overflow-x-hidden" id="quiz-content">
       <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-2">
-        <h2 class="text-xl font-black text-[#2980B9] flex items-center gap-2">🐣 Bébé Quizz</h2>
+        <h2 class="text-xl font-black text-[#2980B9] flex items-center gap-2">🔮 Le Bébé Quizz</h2>
         <button onclick="closeQuizModal()" class="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center text-stone-500 font-bold hover:bg-stone-200 transition cursor-pointer shrink-0">✕</button>
       </div>
       
@@ -1113,41 +1113,42 @@ async function openQuizModal() {
         <p class="text-sm text-[#2980B9] font-medium">${messageTop}</p>
       </div>
 
-      <div class="space-y-6 w-full">
+      <div class="space-y-6 w-full max-w-full">
         <!-- 1. LE PRÉNOM -->
-        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100 w-full">
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100 w-full min-w-0">
           <h3 class="text-sm font-black text-stone-700 uppercase tracking-wider mb-3">1. Le Prénom (Tiercé)</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div><label class="text-[10px] text-stone-500 font-bold">Choix 1 (20 pts)</label><input type="text" id="qz-p1" value="${p.prenom_1 || ''}" ${lockAttr} class="${tierceClass}"></div>
-            <div><label class="text-[10px] text-stone-500 font-bold">Choix 2 (12 pts)</label><input type="text" id="qz-p2" value="${p.prenom_2 || ''}" ${lockAttr} class="${tierceClass}"></div>
-            <div><label class="text-[10px] text-stone-500 font-bold">Choix 3 (5 pts)</label><input type="text" id="qz-p3" value="${p.prenom_3 || ''}" ${lockAttr} class="${tierceClass}"></div>
+          <!-- Ajout du min-w-0 sur les enfants de la grille -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full min-w-0">
+            <div class="min-w-0 w-full"><label class="text-[10px] text-stone-500 font-bold block truncate">Choix 1 (20 pts)</label><input type="text" id="qz-p1" value="${p.prenom_1 || ''}" ${lockAttr} class="${tierceClass}"></div>
+            <div class="min-w-0 w-full"><label class="text-[10px] text-stone-500 font-bold block truncate">Choix 2 (12 pts)</label><input type="text" id="qz-p2" value="${p.prenom_2 || ''}" ${lockAttr} class="${tierceClass}"></div>
+            <div class="min-w-0 w-full"><label class="text-[10px] text-stone-500 font-bold block truncate">Choix 3 (5 pts)</label><input type="text" id="qz-p3" value="${p.prenom_3 || ''}" ${lockAttr} class="${tierceClass}"></div>
           </div>
         </div>
 
-        <!-- 2. MENSURATIONS & TIMING (grid-cols-1 obligatoire sur mobile) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">2. Poids (en g)</label>
+        <!-- 2. MENSURATIONS & TIMING -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
+          <div class="min-w-0 w-full">
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">2. Poids (en g)</label>
             <input type="number" id="qz-poids" placeholder="ex: 3450" value="${p.poids || ''}" ${lockAttr} class="${inputClass}">
           </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">3. Taille (en cm)</label>
+          <div class="min-w-0 w-full">
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">3. Taille (en cm)</label>
             <input type="number" step="0.5" id="qz-taille" placeholder="ex: 51" value="${p.taille || ''}" ${lockAttr} class="${inputClass}">
           </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">4. Date prévue</label>
+          <div class="min-w-0 w-full">
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">4. Date prévue</label>
             <input type="date" id="qz-date" value="${p.date_naissance || ''}" ${lockAttr} class="${inputClass}">
           </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">5. Heure</label>
+          <div class="min-w-0 w-full">
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">5. Heure</label>
             <input type="time" id="qz-heure" value="${p.heure_naissance || ''}" ${lockAttr} class="${inputClass}">
           </div>
         </div>
 
         <!-- 3. PHYSIQUE -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">6. Cheveux</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
+          <div class="min-w-0 w-full">
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">6. Cheveux</label>
             <select id="qz-cheveux" ${lockAttr} class="${inputClass}">
               <option value="" disabled ${!p.cheveux ? 'selected' : ''}>Choisir...</option>
               <option value="Chauve" ${p.cheveux === 'Chauve' ? 'selected' : ''}>Chauve (Boule de billard)</option>
@@ -1157,8 +1158,8 @@ async function openQuizModal() {
               <option value="Roux" ${p.cheveux === 'Roux' ? 'selected' : ''}>Roux</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">7. Yeux</label>
+          <div class="min-w-0 w-full">
+            <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">7. Yeux</label>
             <select id="qz-yeux" ${lockAttr} class="${inputClass}">
               <option value="" disabled ${!p.yeux ? 'selected' : ''}>Choisir...</option>
               <option value="Bleus" ${p.yeux === 'Bleus' ? 'selected' : ''}>Bleus</option>
@@ -1170,8 +1171,8 @@ async function openQuizModal() {
         </div>
 
         <!-- 4. LE JOUR J -->
-        <div class="w-full">
-          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">8. Durée du travail</label>
+        <div class="min-w-0 w-full">
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">8. Durée du travail</label>
           <select id="qz-duree" ${lockAttr} class="${inputClass}">
             <option value="" disabled ${!p.duree_travail ? 'selected' : ''}>Choisir...</option>
             <option value="Express" ${p.duree_travail === 'Express' ? 'selected' : ''}>Express (< 6h)</option>
@@ -1182,8 +1183,8 @@ async function openQuizModal() {
           </select>
         </div>
 
-        <div class="w-full">
-          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">9. Activité de Papa au top départ</label>
+        <div class="min-w-0 w-full">
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">9. Activité de Papa au top départ</label>
           <select id="qz-papa" ${lockAttr} class="${inputClass}">
             <option value="" disabled ${!p.papa_activite ? 'selected' : ''}>Choisir...</option>
             <option value="Sommeil" ${p.papa_activite === 'Sommeil' ? 'selected' : ''}>En plein sommeil profond</option>
@@ -1194,8 +1195,8 @@ async function openQuizModal() {
           </select>
         </div>
 
-        <div class="w-full">
-          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">10. "Météo" de Maman au top départ</label>
+        <div class="min-w-0 w-full">
+          <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1 truncate">10. "Météo" de Maman au top départ</label>
           <select id="qz-maman" ${lockAttr} class="${inputClass}">
             <option value="" disabled ${!p.maman_meteo ? 'selected' : ''}>Choisir...</option>
             <option value="Soleil" ${p.maman_meteo === 'Soleil' ? 'selected' : ''}>☀️ Grand Soleil Zen (Maîtrise totale)</option>
