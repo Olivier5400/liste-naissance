@@ -286,6 +286,7 @@ function renderItemsLayout() {
   const isAll = activeCategory === 'all';
   const catsToRender = isAll ? Object.keys(catConfig).filter(k => k !== 'all') : [activeCategory];
   
+  // 📱 1. AFFICHAGE MOBILE & IPAD PORTRAIT (< 1024px)
   const masterWelcomeCard = `
     <div class="lg:hidden w-full bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-[#D4E6F1] shadow-2xs text-left mb-8 select-text relative overflow-hidden">
       <div class="flex items-center justify-between mb-3">
@@ -296,39 +297,59 @@ function renderItemsLayout() {
         Vous l'attendiez avec impatience ? (ou pas 😅) Voici la liste de naissance pour notre crevette d'amour 🐣 ! Aucune obligation, seulement des idées pour vous éviter les doublons (et limiter la fièvre acheteuse 🤪). <br><br>
         Un grand merci d'avance pour toutes vos délicates attentions et votre accompagnement dans cette belle aventure. On vous embrasse et on a hâte de vous retrouver... à 3 du coup bientôt 🥰
       </p>
-      <div class="pt-3 border-t border-stone-100 text-xs md:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <span class="font-black text-[#2980B9]">📍 Besoin de notre adresse pour une livraison ?</span>
-          <p class="text-stone-600 font-bold mt-0.5">Gaëlle RAUD & Olivier CADIOU • 30 Quai de la Bataille, 54000 Nancy</p>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  const interactionCards = `
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <!-- Carte Quizz -->
-      <div onclick="openQuizModal()" class="bg-[#F4F9FB] hover:bg-[#E2EFF6] border border-[#D4E6F1] rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300 active:scale-95 shadow-sm">
-        <div class="text-4xl drop-shadow-sm">🔮</div>
-        <div>
-          <h3 class="font-black text-[#2980B9] text-sm uppercase tracking-wider">Le Bébé Quizz</h3>
-          <p class="text-xs text-stone-500 font-medium mt-1">Vos pronostics avant le 19 octobre !</p>
-        </div>
-      </div>
       
-      <!-- Carte Livre d'Or -->
-      <div onclick="openGuestbookModal()" class="bg-[#FFF4F4] hover:bg-[#FCE0DE] border border-[#FADBD8] rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300 active:scale-95 shadow-sm">
-        <div class="text-4xl drop-shadow-sm">💌</div>
-        <div>
-          <h3 class="font-black text-[#C0392B] text-sm uppercase tracking-wider">Capsule Temporelle</h3>
-          <p class="text-xs text-stone-500 font-medium mt-1">Laissez-nous un mot ou une vidéo</p>
+      <div class="pt-4 border-t border-stone-100 text-xs md:text-sm">
+        <div class="mb-5 text-center sm:text-left">
+          <span class="font-black text-[#2980B9]">📍 Besoin de notre adresse pour une livraison ?</span>
+          <p class="text-stone-600 font-bold mt-1">Gaëlle RAUD & Olivier CADIOU<br>30 Quai de la Bataille, 54000 Nancy</p>
+        </div>
+
+        <!-- Boutons : Empilés sur petit mobile, côte à côte centrés sur grand mobile/iPad portrait -->
+        <div class="pt-5 border-t border-stone-100 flex flex-col sm:flex-row justify-center items-center gap-4">
+          <div onclick="openQuizModal()" class="w-full max-w-[280px] bg-[#E0F2FE] hover:bg-[#BAE6FD] border border-[#7DD3FC] rounded-full p-2.5 flex items-center justify-center gap-3.5 cursor-pointer transition-all duration-300 active:scale-95 shadow-xs">
+            <div class="w-10 h-10 rounded-full bg-white border border-[#7DD3FC] flex items-center justify-center text-xl shadow-sm shrink-0">
+              <span class="inline-block animate-bounce" style="animation-duration: 2s; transform-origin: bottom;">🐣</span>
+            </div>
+            <span class="font-black text-[#0369A1] text-xs uppercase tracking-widest">Bébé Quizz</span>
+          </div>
+          
+          <div onclick="openGuestbookModal()" class="w-full max-w-[280px] bg-[#FFE4E6] hover:bg-[#FECACA] border border-[#FCA5A5] rounded-full p-2.5 flex items-center justify-center gap-3.5 cursor-pointer transition-all duration-300 active:scale-95 shadow-xs">
+            <div class="w-10 h-10 rounded-full bg-white border border-[#FCA5A5] flex items-center justify-center text-xl shadow-sm shrink-0">
+              <span class="inline-block animate-pulse">💌</span>
+            </div>
+            <span class="font-black text-[#B91C1C] text-xs uppercase tracking-widest">Boîte aux lettres</span>
+          </div>
         </div>
       </div>
     </div>
   `;
-  
-  // 🚂 C'est ICI que la soudure se fait ! On additionne les deux blocs.
-  let structureHtml = masterWelcomeCard + interactionCards;
+
+  // 💻 2. AFFICHAGE ORDINATEUR & IPAD PAYSAGE (>= 1024px)
+  // Ajout du style "margin-top: -1.5rem" pour forcer la remontée des boutons vers le haut !
+  const desktopInteractionCards = `
+    <div class="hidden lg:flex justify-center items-center gap-6 mb-8 relative z-10" style="margin-top: -1.5rem;">
+      
+      <!-- Pilule Quizz (Desktop) -->
+      <div onclick="openQuizModal()" class="w-full max-w-[320px] bg-[#E0F2FE] hover:bg-[#BAE6FD] border border-[#7DD3FC] rounded-full p-3 flex items-center justify-center gap-4 cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-1 active:scale-95 shadow-sm">
+        <div class="w-12 h-12 rounded-full bg-white border border-[#7DD3FC] flex items-center justify-center text-2xl shadow-sm shrink-0">
+          <span class="inline-block animate-bounce" style="animation-duration: 2s; transform-origin: bottom;">🐣</span>
+        </div>
+        <span class="font-black text-[#0369A1] text-sm uppercase tracking-widest">Bébé Quizz</span>
+      </div>
+
+      <!-- Pilule Capsule (Desktop) -->
+      <div onclick="openGuestbookModal()" class="w-full max-w-[320px] bg-[#FFE4E6] hover:bg-[#FECACA] border border-[#FCA5A5] rounded-full p-3 flex items-center justify-center gap-4 cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-1 active:scale-95 shadow-sm">
+        <div class="w-12 h-12 rounded-full bg-white border border-[#FCA5A5] flex items-center justify-center text-2xl shadow-sm shrink-0">
+          <span class="inline-block animate-pulse">💌</span>
+        </div>
+        <span class="font-black text-[#B91C1C] text-sm uppercase tracking-widest">Boîte aux lettres</span>
+      </div>
+
+    </div>
+  `;
+
+  // 🚂 Assemblage : Accueil Mobile + Boutons PC + Articles
+  let structureHtml = masterWelcomeCard + desktopInteractionCards;
 
   catsToRender.forEach(catId => {
     const allCatItems = itemsData.filter(item => item.cat_id === catId);
@@ -1030,7 +1051,7 @@ async function uploadToCloudinary(file) {
 }
 
 // =========================================================================
-//   LE BÉBÉ QUIZZ 🔮 (AVEC SÉCURITÉ TEMPORELLE DU 19 SEPTEMBRE)
+//   LE BÉBÉ QUIZZ 🔮 (AVEC SÉCURITÉ TEMPORELLE & CORRECTION iOS)
 // =========================================================================
 async function openQuizModal() {
   // 1. On vérifie si l'invité a déjà enregistré un pronostic
@@ -1044,13 +1065,12 @@ async function openQuizModal() {
   const p = existingData || {};
 
   // 🕒 2. GESTION DE LA DATE LIMITE
-  const dateLimite = new Date('2026-09-19T23:59:59'); // Verrouillage le 19 septembre à minuit
+  const dateLimite = new Date('2026-09-19T23:59:59'); 
   const dateActuelle = new Date();
   
   const isUpdateLocked = isUpdate && (dateActuelle > dateLimite);
   const isFirstTimeLate = !isUpdate && (dateActuelle > dateLimite);
   
-  // 💬 Message dynamique selon la situation
   let messageTop = '';
   if (isUpdateLocked) {
     messageTop = '🔒 Vos pronostics sont définitivement scellés ! Rendez-vous à la naissance.';
@@ -1062,40 +1082,40 @@ async function openQuizModal() {
     messageTop = 'À vous de jouer ! Vous pourrez modifier vos choix jusqu\'au 19 septembre.';
   }
 
-  // 🎨 Styles dynamiques (Grisé si verrouillé)
+  // 🎨 Styles dynamiques - CORRECTION IOS : Ajout de "min-w-0" et "px-3" au lieu de px-4
   const lockAttr = isUpdateLocked ? 'disabled' : '';
   const inputClass = isUpdateLocked 
-    ? "w-full bg-stone-100 border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-500 cursor-not-allowed opacity-70"
-    : "w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#3498DB]";
+    ? "w-full min-w-0 bg-stone-100 border border-stone-200 rounded-xl px-3 py-3 text-sm text-stone-500 cursor-not-allowed opacity-70"
+    : "w-full min-w-0 bg-stone-50 border border-stone-200 rounded-xl px-3 py-3 text-sm outline-none focus:border-[#3498DB] transition-colors";
     
   const tierceClass = isUpdateLocked 
-    ? "w-full mt-1 bg-stone-100 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-500 cursor-not-allowed opacity-70"
-    : "w-full mt-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#3498DB]";
+    ? "w-full min-w-0 mt-1 bg-stone-100 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-500 cursor-not-allowed opacity-70"
+    : "w-full min-w-0 mt-1 bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#3498DB] transition-colors";
 
-  // 3. Création de la fenêtre
+  // 3. Création de la fenêtre (ajout de w-full pour sécuriser l'enveloppe)
   let modal = document.getElementById('quiz-modal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'quiz-modal';
-    modal.className = 'fixed inset-0 z-[80] bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300';
+    modal.className = 'fixed inset-0 z-[80] w-full bg-stone-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300';
     document.body.appendChild(modal);
   }
 
-  // 4. Injection du formulaire complet
+  // 4. Injection du formulaire complet (CORRECTION : overflow-x-hidden et p-4 sur mobile)
   modal.innerHTML = `
-    <div class="bg-white w-full max-w-2xl rounded-[2rem] p-6 shadow-2xl transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="quiz-content">
+    <div class="bg-white w-full max-w-2xl rounded-[2rem] p-4 sm:p-6 shadow-2xl transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto overflow-x-hidden" id="quiz-content">
       <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-2">
-        <h2 class="text-xl font-black text-[#2980B9] flex items-center gap-2">🔮 Le Bébé Quizz</h2>
-        <button onclick="closeQuizModal()" class="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center text-stone-500 font-bold hover:bg-stone-200 transition cursor-pointer">✕</button>
+        <h2 class="text-xl font-black text-[#2980B9] flex items-center gap-2">🐣 Bébé Quizz</h2>
+        <button onclick="closeQuizModal()" class="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center text-stone-500 font-bold hover:bg-stone-200 transition cursor-pointer shrink-0">✕</button>
       </div>
       
       <div class="bg-[#F4F9FB] border border-[#D4E6F1] rounded-xl p-4 mb-6 text-center">
         <p class="text-sm text-[#2980B9] font-medium">${messageTop}</p>
       </div>
 
-      <div class="space-y-6">
+      <div class="space-y-6 w-full">
         <!-- 1. LE PRÉNOM -->
-        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100">
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100 w-full">
           <h3 class="text-sm font-black text-stone-700 uppercase tracking-wider mb-3">1. Le Prénom (Tiercé)</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div><label class="text-[10px] text-stone-500 font-bold">Choix 1 (20 pts)</label><input type="text" id="qz-p1" value="${p.prenom_1 || ''}" ${lockAttr} class="${tierceClass}"></div>
@@ -1104,8 +1124,8 @@ async function openQuizModal() {
           </div>
         </div>
 
-        <!-- 2. MENSURATIONS & TIMING -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- 2. MENSURATIONS & TIMING (grid-cols-1 obligatoire sur mobile) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
           <div>
             <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">2. Poids (en g)</label>
             <input type="number" id="qz-poids" placeholder="ex: 3450" value="${p.poids || ''}" ${lockAttr} class="${inputClass}">
@@ -1125,7 +1145,7 @@ async function openQuizModal() {
         </div>
 
         <!-- 3. PHYSIQUE -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
           <div>
             <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">6. Cheveux</label>
             <select id="qz-cheveux" ${lockAttr} class="${inputClass}">
@@ -1150,7 +1170,7 @@ async function openQuizModal() {
         </div>
 
         <!-- 4. LE JOUR J -->
-        <div>
+        <div class="w-full">
           <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">8. Durée du travail</label>
           <select id="qz-duree" ${lockAttr} class="${inputClass}">
             <option value="" disabled ${!p.duree_travail ? 'selected' : ''}>Choisir...</option>
@@ -1162,7 +1182,7 @@ async function openQuizModal() {
           </select>
         </div>
 
-        <div>
+        <div class="w-full">
           <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">9. Activité de Papa au top départ</label>
           <select id="qz-papa" ${lockAttr} class="${inputClass}">
             <option value="" disabled ${!p.papa_activite ? 'selected' : ''}>Choisir...</option>
@@ -1174,13 +1194,14 @@ async function openQuizModal() {
           </select>
         </div>
 
-        <div>
+        <div class="w-full">
           <label class="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">10. "Météo" de Maman au top départ</label>
           <select id="qz-maman" ${lockAttr} class="${inputClass}">
             <option value="" disabled ${!p.maman_meteo ? 'selected' : ''}>Choisir...</option>
             <option value="Soleil" ${p.maman_meteo === 'Soleil' ? 'selected' : ''}>☀️ Grand Soleil Zen (Maîtrise totale)</option>
             <option value="Tornade" ${p.maman_meteo === 'Tornade' ? 'selected' : ''}>🌪️ Tornade Logistique (Où est le sac ?)</option>
             <option value="Orage" ${p.maman_meteo === 'Orage' ? 'selected' : ''}>⛈️ Orage Magnétique (Ne me touche pas !)</option>
+            <option value="Brouillard" ${p.maman_meteo === 'Brouillard' ? 'selected' : ''}>🌫️ Brouillard Mystique (C'est le chou-fleur ?)</option>
             <option value="Feu" ${p.maman_meteo === 'Feu' ? 'selected' : ''}>🥳 Feu d'artifice (Sortez-le, je veux du saucisson !)</option>
           </select>
         </div>
@@ -1290,7 +1311,7 @@ async function openGuestbookModal() {
   modal.innerHTML = `
     <div class="bg-white w-full max-w-lg rounded-[2rem] p-6 shadow-2xl transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="guestbook-content">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-black text-[#C0392B] flex items-center gap-2">💌 Capsule Temporelle</h2>
+        <h2 class="text-xl font-black text-[#C0392B] flex items-center gap-2">💌 Boîte aux lettres</h2>
         <button onclick="closeGuestbookModal()" class="w-8 h-8 bg-stone-100 rounded-full flex items-center justify-center text-stone-500 font-bold hover:bg-stone-200 transition cursor-pointer">✕</button>
       </div>
       
