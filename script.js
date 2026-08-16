@@ -689,20 +689,144 @@ async function cancelReservation(itemId) {
   else { alert("Cadeau libéré ! ✨"); await loadItems(); showDetail(itemId); }
 }
 
+// =========================================================================
+//   PORTAIL DES PARENTS (TABLEAU DE BORD UNIFIÉ) 🕵️‍♂️
+// =========================================================================
 async function toggleAdminView() {
   const panel = document.getElementById('details-panel');
   const contentEl = document.getElementById('details-content');
   panel.style.display = 'flex';
   document.body.classList.add('overflow-hidden'); // 🔒 Bloque le scroll
 
+  // 1. Écran de chargement
+  contentEl.innerHTML = `
+    <div class="flex flex-col items-center justify-center p-10 w-full h-full min-h-[40vh]">
+      <span class="animate-spin text-4xl mb-4">⏳</span>
+      <p class="font-black text-stone-500 uppercase tracking-widest text-sm">Ouverture du coffre-fort...</p>
+    </div>
+  `;
+
+  // 2. Récupération des données en parallèle (Livre d'or, Pronostics, et Profils pour les VRAIS prénoms !)
+  const [resLivre, resPronos, resProfiles] = await Promise.all([
+    sb.from('livre_or').select('*').order('created_at', { ascending: false }),
+    sb.from('pronostics').select('*').order('created_at', { ascending: false }),
+    sb.from('profiles').select('*')
+  ]);
+
+  const messages = resLivre.data || [];
+  const pronostics = resPronos.data || [];
+  const profiles = resProfiles.data || [];
+
+  // 3. Construction de la liste des messages (Boîte aux lettres)
+  let messagesHtml = '<div class="space-y-4">';
+  if (messages.length > 0) {
+    messagesHtml += messages.map(m => `
+      <div class="bg-[#FFF4F4] border border-[#FADBD8] rounded-2xl p-4 shadow-sm relative">
+        <h4 class="font-black text-[#C0392B] text-sm mb-1">${m.auteur || 'Anonyme'}</h4>
+        ${m.message ? `<p class="text-stone-600 text-sm italic whitespace-pre-wrap">"${m.message}"</p>` : ''}
+        ${m.media_url ? `
+          <a href="${m.media_url}" target="_blank" class="inline-flex items-center gap-2 mt-3 text-xs font-black text-white bg-[#C0392B] hover:bg-[#A93226] px-4 py-2 rounded-xl transition">
+            <span>📸 Voir le média joint</span>
+          </a>
+        ` : ''}
+      </div>
+    `).join('');
+  } else {
+    messagesHtml += `<div class="text-center p-6 bg-stone-50 rounded-2xl border border-stone-100 text-stone-400 text-sm font-medium">La boîte aux lettres est encore vide.</div>`;
+  }
+  messagesHtml += '</div>';
+
+  // 4. Construction de la liste des pronostics (Quizz) avec les Vrais Prénoms
+  let pronosHtml = '<div class="space-y-4">';
+  if (pronostics.length > 0) {
+    pronosHtml += pronostics.map(p => {
+      // 💡 C'EST ICI QU'ON RÉCUPÈRE LE VRAI PRÉNOM GRÂCE À L'ID DU JOUEUR !
+      const profile = profiles.find(prof => prof.id === p.user_id);
+      const nomJoueur = profile ? (profile.surnom || profile.prenom) : 'Invité Inconnu';
+      
+      const dateParis = p.date_naissance ? new Date(p.date_naissance).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : 'Non défini';
+      
+      return `
+      <div class="bg-[#F4F9FB] border border-[#D4E6F1] rounded-2xl p-4 shadow-sm">
+        <div class="flex justify-between items-start mb-2 border-b border-white pb-2">
+          <h4 class="font-black text-[#2980B9] text-sm uppercase tracking-wider">Joueur : ${nomJoueur}</h4>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-sm">
+          <div><span class="text-[10px] text-stone-400 font-bold block uppercase">Tiercé Prénom</span> <span class="font-bold text-stone-700">${p.prenom_1 || '-'}</span></div>
+          <div><span class="text-[10px] text-stone-400 font-bold block uppercase">Le Jour J</span> <span class="font-bold text-stone-700">${dateParis}</span></div>
+          <div><span class="text-[10px] text-stone-400 font-bold block uppercase">Mensurations</span> <span class="text-stone-600">${p.poids ? p.poids+'g' : '-'} / ${p.taille ? p.taille+'cm' : '-'}</span></div>
+          <div><span class="text-[10px] text-stone-400 font-bold block uppercase">Physique</span> <span class="text-stone-600">${p.cheveux || '-'} / ${p.yeux || '-'}</span></div>
+        </div>
+      </div>
+    `}).join('');
+  } else {
+    pronosHtml += `<div class="text-center p-6 bg-stone-50 rounded-2xl border border-stone-100 text-stone-400 text-sm font-medium">Aucun pari enregistré.</div>`;
+  }
+  pronosHtml += '</div>';
+
+  // 5. Injection de l'interface finale
+  contentEl.innerHTML = `
+    <div class="flex justify-between items-center mb-6">
+      <button onclick="closeDetails()" class="bg-stone-100 border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-2xs hover:bg-stone-200 transition cursor-pointer flex items-center gap-2">← Fermer</button>
+      <h2 class="text-xl font-black text-stone-800 flex items-center gap-2">🕵️‍♂️ Portail des Parents</h2>
+    </div>
+
+    <!-- 🛠️ Boutons de gestion de la liste -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <button onclick="renderAdminAddItemView()" class="p-4 bg-white border border-[#D4E6F1] rounded-2xl shadow-sm hover:shadow-md transition text-left flex items-center gap-3 cursor-pointer">
+        <span class="text-3xl">➕</span>
+        <div>
+          <h3 class="font-black text-[#2980B9] text-sm uppercase tracking-wider">Publier un objet</h3>
+          <p class="text-[10px] text-stone-500 font-bold mt-0.5">Ajouter un nouveau cadeau à la liste</p>
+        </div>
+      </button>
+      
+      <button onclick="renderAdminReservationsView()" class="p-4 bg-white border border-[#D4E6F1] rounded-2xl shadow-sm hover:shadow-md transition text-left flex items-center gap-3 cursor-pointer">
+        <span class="text-3xl">📋</span>
+        <div>
+          <h3 class="font-black text-[#2980B9] text-sm uppercase tracking-wider">Les Réservations</h3>
+          <p class="text-[10px] text-stone-500 font-bold mt-0.5">Voir le tableau de suivi des proches</p>
+        </div>
+      </button>
+    </div>
+
+    <div class="w-full h-px bg-stone-200 mb-8"></div>
+
+    <!-- 💌 Nouveautés : Quizz & Livre d'or -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 text-left">
+      
+      <!-- Colonne 1 : La Capsule -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-black text-[#C0392B] flex items-center gap-2">💌 Boîte aux lettres</h3>
+          <span class="bg-[#FFE4E6] text-[#C0392B] py-1 px-3 rounded-full text-xs font-bold">${messages.length}</span>
+        </div>
+        ${messagesHtml}
+      </div>
+
+      <!-- Colonne 2 : Le Quizz -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-black text-[#2980B9] flex items-center gap-2">🔮 Le Bébé Quizz</h3>
+          <span class="bg-[#E0F2FE] text-[#2980B9] py-1 px-3 rounded-full text-xs font-bold">${pronostics.length}</span>
+        </div>
+        ${pronosHtml}
+      </div>
+
+    </div>
+  `;
+}
+
+// L'ancienne interface "Ajouter un objet" est rangée ici bien au chaud !
+function renderAdminAddItemView() {
+  const contentEl = document.getElementById('details-content');
   const catOptions = Object.keys(catConfig).filter(k => k !== 'all').map(k => `<option value="${catConfig[k].id}">${catConfig[k].emoji} ${catConfig[k].label}</option>`).join('');
 
   contentEl.innerHTML = `
-    <button onclick="closeDetails()" class="mb-4 bg-stone-100 border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-2xs inline-flex items-center gap-2 hover:bg-stone-200 transition cursor-pointer w-max">← Retour</button>
-    <h2 class="text-xl font-black text-[#5C544D] mb-4 text-left">🛠️ Espace Administration</h2>
+    <button onclick="toggleAdminView()" class="mb-4 bg-stone-100 border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-xs font-bold shadow-2xs inline-flex items-center gap-2 hover:bg-stone-200 transition cursor-pointer w-max">← Retour au Portail</button>
+    <h2 class="text-xl font-black text-[#5C544D] mb-4 text-left">➕ Publier un nouvel objet</h2>
     
     <div class="bg-[#F5FAFF] border border-[#D4E6F1] p-5 rounded-2xl text-left shadow-2xs mb-6">
-      <h3 class="font-bold text-xs text-[#2980B9] mb-3 uppercase tracking-wider">Publier un nouvel objet :</h3>
       <input type="text" id="add-nom" placeholder="Nom du cadeau *" class="w-full mb-2.5 p-3 rounded-xl border border-stone-200 text-xs outline-none bg-white font-bold">
       <input type="number" id="add-prix" placeholder="Prix (€) *" class="w-full mb-2.5 p-3 rounded-xl border border-stone-200 text-xs outline-none bg-white font-bold">
       <input type="text" id="add-lien" placeholder="Lien marchand (Optionnel)" class="w-full mb-3 p-3 rounded-xl border border-stone-200 text-xs outline-none bg-white">
@@ -722,12 +846,9 @@ async function toggleAdminView() {
 
       <button onclick="addNewItem()" class="w-full py-4 bg-[#7FB3D5] hover:bg-[#6CA1C3] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-md transition active:scale-95 cursor-pointer">Publier l'objet</button>
     </div>
-
-    <button onclick="renderAdminReservationsView()" class="w-full py-3.5 bg-white border-2 border-[#7FB3D5] hover:bg-[#EAF4FC] text-[#1F618D] rounded-xl font-black text-xs uppercase tracking-widest shadow-2xs transition active:scale-95 cursor-pointer">
-      📋 Voir le suivi des réservations
-    </button>
   `;
 
+  // Remettre le brouillon
   const draft = JSON.parse(localStorage.getItem('admin_draft') || '{}');
   if (draft.nom) document.getElementById('add-nom').value = draft.nom;
   if (draft.prix) document.getElementById('add-prix').value = draft.prix;
